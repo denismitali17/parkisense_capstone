@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'core/theme/app_theme.dart';
 import 'package:parkisense_app/presentation/screens/auth/onboarding_screen.dart';
+import 'package:parkisense_app/presentation/screens/auth/welcome_screen.dart';
 import 'package:parkisense_app/presentation/screens/auth/login_screen.dart';
 import 'package:parkisense_app/presentation/screens/auth/signup_screen.dart';
 import 'package:parkisense_app/presentation/screens/auth/forgot_password_screen.dart';
@@ -12,6 +13,7 @@ import 'package:parkisense_app/presentation/screens/screening/processing_screen.
 import 'package:parkisense_app/presentation/screens/screening/results_screen.dart';
 import 'package:parkisense_app/presentation/screens/profile/profile_settings_screen.dart';
 import 'package:parkisense_app/presentation/screens/history/history_analytics_screen.dart';
+import 'package:parkisense_app/providers/theme_provider.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -35,19 +37,24 @@ void main() async {
   );
 }
 
-class ParkiSenseApp extends StatelessWidget {
+class ParkiSenseApp extends ConsumerWidget {
   const ParkiSenseApp({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final themeMode = ref.watch(themeModeProvider);
+
     return MaterialApp(
       title: 'ParkiSense',
       debugShowCheckedModeBanner: false,
       theme: AppTheme.lightTheme,
+      darkTheme: AppTheme.darkTheme,
+      themeMode: themeMode,
 
       initialRoute: '/',
       routes: {
         '/': (context) => const OnboardingScreen(),
+        '/welcome': (context) => const WelcomeScreen(),
         '/login': (context) => const LoginScreen(),
         '/signup': (context) => const SignUpScreen(),
         '/forgot-password': (context) => const ForgotPasswordScreen(),

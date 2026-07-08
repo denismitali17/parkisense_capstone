@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:google_fonts/google_fonts.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../providers/auth_provider.dart';
 
@@ -95,7 +96,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                           },
                           child: authState.isLoading 
                               ? const SizedBox(height: 20, width: 20, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2)) 
-                              : const Text('Log In', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                              : Text('Log In', style: GoogleFonts.poppins(fontSize: 16, fontWeight: FontWeight.bold)),
                         ),
                       ),
                       const SizedBox(width: 12),
@@ -108,7 +109,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                           decoration: BoxDecoration(
                             border: Border.all(color: AppColors.borderGrey),
                             borderRadius: BorderRadius.circular(12),
-                            color: Colors.white,
+                            color: Theme.of(context).cardTheme.color,
                           ),
                           child: Center(
                             child: Image.network(

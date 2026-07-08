@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:google_fonts/google_fonts.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../providers/auth_provider.dart';
 
@@ -83,7 +84,7 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
                         ref.read(authNotifierProvider.notifier).signUpWithEmail(_emailController.text.trim(), _passwordController.text.trim(), _nameController.text.trim());
                       }
                     },
-                    child: authState.isLoading ? const SizedBox(height: 20, width: 20, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2)) : const Text('Create Account'),
+                    child: authState.isLoading ? const SizedBox(height: 20, width: 20, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2)) : Text('Create Account', style: GoogleFonts.poppins()),
                   ),
                   const SizedBox(height: 24),
                   Center(

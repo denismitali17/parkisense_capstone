@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../data/models/screening_model.dart';
 
@@ -13,7 +14,7 @@ class ResultsScreen extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Biometric Diagnostics Analysis'),
-        backgroundColor: Colors.white,
+        backgroundColor: Theme.of(context).appBarTheme.backgroundColor,
         elevation: 0,
         leading: IconButton(
           icon: const Icon(Icons.close),
@@ -38,12 +39,12 @@ class ResultsScreen extends StatelessWidget {
                 children: [
                   Text(
                     'CLASSIFIER REPORT EVALUATION',
-                    style: TextStyle(color: Colors.white.withOpacity(0.8), fontSize: 11, fontWeight: FontWeight.bold, letterSpacing: 1.1),
+                    style: GoogleFonts.poppins(color: Colors.white.withOpacity(0.8), fontSize: 11, fontWeight: FontWeight.bold, letterSpacing: 1.1),
                   ),
                   const SizedBox(height: 8),
                   Text(
                     screening.diagnosis,
-                    style: const TextStyle(color: Colors.white, fontSize: 26, fontWeight: FontWeight.bold),
+                    style: GoogleFonts.poppins(color: Colors.white, fontSize: 26, fontWeight: FontWeight.bold),
                   ),
                   const SizedBox(height: 16),
                   Row(
@@ -51,11 +52,11 @@ class ResultsScreen extends StatelessWidget {
                     children: [
                       Text(
                         'Ensemble Prediction Confidence:',
-                        style: TextStyle(color: Colors.white.withOpacity(0.9), fontSize: 14),
+                        style: GoogleFonts.poppins(color: Colors.white.withOpacity(0.9), fontSize: 14),
                       ),
                       Text(
                         '${(screening.confidenceScore * 100).toStringAsFixed(2)}%',
-                        style: const TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold),
+                        style: GoogleFonts.poppins(color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold),
                       ),
                     ],
                   ),
