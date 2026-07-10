@@ -37,7 +37,7 @@ ParkiSense captures a short, sustained vowel recording from the user's phone, se
 |---|---|
 |  Production API (docs) | https://parkisense-api.onrender.com/docs |
 |  Live demo (Appetize, no install needed) | https://appetize.io/embed/b_ormwwyg5u657hz5dajpbuu7zue |
-|  Video walkthrough | https://www.youtube.com/watch?v=A1xcYNQBxTs |
+|  Video  | https://www.youtube.com/watch?v=A1xcYNQBxTs |
 |  Downloadable APK | https://drive.google.com/file/d/1oA04WSMAeMJv2R7JIqiq9eu3_wyPAHnA/view |
 
 
@@ -75,7 +75,7 @@ ParkiSense captures a short, sustained vowel phonation directly from the user's 
 
 ###  Predictive Model — M7CRNN
 
-The core predictive engine is **M7CRNN (Model 7, Convolutional Recurrent Neural Network)** — the model currently deployed to the production API on Render.
+The core predictive engine is **M7CRNN (Model 7, Convolutional Recurrent Neural Network)**, the model currently deployed to the production API on Render.
 
 | Metric | Score |
 |---|---|
@@ -103,7 +103,7 @@ This streams a real Android instance running ParkiSense straight from your brows
 1. Download and install [BlueStacks](https://www.bluestacks.com/) on your Windows or macOS machine.
 2. Open BlueStacks and let it finish setting up (first launch takes a minute or two).
 3. Download the ParkiSense APK from the [Google Drive link](https://drive.google.com/file/d/1oA04WSMAeMJv2R7JIqiq9eu3_wyPAHnA/view).
-4. Drag and drop the downloaded APK file onto the BlueStacks window — it installs automatically.
+4. Drag and drop the downloaded APK file onto the BlueStacks window, it installs automatically.
    - Alternatively, click the APK icon in the BlueStacks sidebar and browse to the downloaded file.
 5. Launch **ParkiSense** from the BlueStacks home screen and sign up or log in.
 
@@ -205,9 +205,9 @@ Measured against the goals set with our supervisor:
 
 Breaking the project into supervised milestones kept a complex ML + mobile integration manageable:
 
-- **Milestone 1 — Acoustic serialization:** Standardize raw audio recordings into uniform sampling matrices on-device before transmission.
-- **Milestone 2 — Infrastructure optimization:** Work within Render's memory constraints to keep inference responsive.
+- **Milestone 1: Acoustic serialization:** Standardize raw audio recordings into uniform sampling matrices on-device before transmission.
+- **Milestone 2: Infrastructure optimization:** Work within Render's memory constraints to keep inference responsive.
 
 ### Impact
 
-ParkiSense gives users a free, fast, and reliable early-screening tool they can use at home — a way to start monitoring vocal biomarkers before deciding whether a formal, in-person clinical evaluation is warranted.
+ParkiSense gives users a free, fast, and reliable early-screening tool they can use at home, a way to start monitoring vocal biomarkers before deciding whether a formal, in-person clinical evaluation is warranted.
