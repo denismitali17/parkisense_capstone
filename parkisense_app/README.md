@@ -6,8 +6,8 @@ ParkiSense is a machine learning-powered cross-platform mobile application desig
 
 ## Production Links & Deliverables
 
-* **Production Endpoint:** `[https://parkisense-api.onrender.com](https://parkisense-api.onrender.com)`
-* **Downloadable Client Application (APK):** [https://appetize.io/embed/b_ormwwyg5u657hz5dajpbuu7zue]
+* **Production Endpoint:** https://parkisense-api.onrender.com
+* **Downloadable Client Application (APK):** https://appetize.io/embed/b_ormwwyg5u657hz5dajpbuu7zue
 
 
 ---
