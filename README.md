@@ -1,6 +1,6 @@
 <div align="center">
 
-# ParkiSense
+#  ParkiSense
 ### Parkinson's Disease Screening Through Voice
 
 *A cross-platform mobile app that screens for Parkinson's disease using non-invasive vocal acoustic analysis.*
@@ -31,15 +31,14 @@ ParkiSense captures a short, sustained vowel recording from the user's phone, se
 
 ---
 
-## Production Links & Deliverables
+##  Production Links & Deliverables
 
 | Resource | Link |
 |---|---|
 |  Production API (docs) | https://parkisense-api.onrender.com/docs |
 |  Live demo (Appetize, no install needed) | https://appetize.io/embed/b_ormwwyg5u657hz5dajpbuu7zue |
-|  Video walkthrough | **[ADD LINK HERE]** — e.g. an unlisted YouTube link |
+|  Video walkthrough | https://www.youtube.com/watch?v=A1xcYNQBxTs |
 |  Downloadable APK | https://drive.google.com/file/d/1oA04WSMAeMJv2R7JIqiq9eu3_wyPAHnA/view |
-
 
 
 ---
@@ -73,6 +72,17 @@ ParkiSense captures a short, sustained vowel phonation directly from the user's 
 | Inference Gateway | FastAPI REST backend serving a CRNN model |
 | Model Format | ONNX export for optimized inference |
 | Deployment | Render (backend), 512MB RAM tier |
+
+###  Predictive Model — M7CRNN
+
+The core predictive engine is **M7CRNN (Model 7, Convolutional Recurrent Neural Network)** — the model currently deployed to the production API on Render.
+
+| Metric | Score |
+|---|---|
+| Accuracy (validation) | **83.78%** |
+| ROC-AUC (validation) | **86.01%** |
+
+Evaluated against held-out validation data, M7CRNN generalizes well across both the spatial patterns (spectrogram structure) and temporal patterns (frame-to-frame variation) present in vocal biomarkers.
 
 ---
 
@@ -168,7 +178,7 @@ flutter run
 |  Control / healthy | Sustained vowel phonation with stable fundamental frequency (F₀), jitter < 1.0%, normal HNR | Negative class (0), low confidence score |
 |  Pathological / Parkinsonian | Elevated jitter and shimmer, depressed HNR, micro-tremor fluctuations | Positive class (1), 99.97% confidence, alert layer triggered |
 
-
+*(Insert screenshots of both result screens here.)*
 
 ### Performance across hardware and infrastructure
 
@@ -195,9 +205,9 @@ Measured against the goals set with our supervisor:
 
 Breaking the project into supervised milestones kept a complex ML + mobile integration manageable:
 
-- **Milestone 1: Acoustic serialization:** Standardize raw audio recordings into uniform sampling matrices on-device before transmission.
-- **Milestone 2: Infrastructure optimization:** Work within Render's memory constraints to keep inference responsive.
+- **Milestone 1 — Acoustic serialization:** Standardize raw audio recordings into uniform sampling matrices on-device before transmission.
+- **Milestone 2 — Infrastructure optimization:** Work within Render's memory constraints to keep inference responsive.
 
 ### Impact
 
-ParkiSense gives users a free, fast, and reliable early-screening tool they can use at home, a way to start monitoring vocal biomarkers before deciding whether a formal, in-person clinical evaluation is warranted.
+ParkiSense gives users a free, fast, and reliable early-screening tool they can use at home — a way to start monitoring vocal biomarkers before deciding whether a formal, in-person clinical evaluation is warranted.
