@@ -16,20 +16,7 @@ ParkiSense is a machine learning-powered cross-platform mobile application desig
 
 ParkiSense captures short, high-fidelity voice samples directly from a user's mobile device, sanitizes the raw time-series vector array, and forwards the payload to a remote backend. The remote backend maps the signals into $128 \times 128$ frequency matrices to screen for structural deviations indicative of Parkinson's Disease.
 
-```
-       [ Patient Dashboard ]                     [ Doctor Dashboard ]
-                 │                                         │
-        1. Record Voice Sample                             │
-                 │                                         │
-        2. Stream to FastAPI                               │
-                 │                                         │
-     3. Render Diagnostic Result                           │
-                 │                                         │
-   4. Request Clinical Appointment ────────────────► 5. Review History
-                                                   │
-                                            6. Approve / Deny
-
-```
+[text](../../Downloads)
 
 ### Supported User Profiles
 
