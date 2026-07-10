@@ -131,7 +131,7 @@ To guarantee cross-platform accessibility, execution profiles were collected acr
 * **Cloud Production Infrastructure (Render Serverless Architecture Capped at 512MB RAM):**
 * *Performance Profile:* Through specialized backend streaming loops and direct tensor graph calls, the memory footprint was successfully stabilized at **~410MB**, completely neutralizing host container memory crashes (`SIGKILL`).
 
-
+![alt text](patient_doctor_dashboard_flow.png)
 
 ---
 
