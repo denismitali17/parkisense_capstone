@@ -13,6 +13,7 @@ class AppColors {
 
   static const Color textDark = Color(0xFF1E293B);
   static const Color textLight = Color(0xFF64748B);
+  static const Color textGrey = Color(0xFF9CA3AF);
   static const Color borderGrey = Color(0xFFE2E8F0);
   
   // Dark mode colors

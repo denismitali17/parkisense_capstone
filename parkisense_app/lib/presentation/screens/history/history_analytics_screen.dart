@@ -5,65 +5,66 @@ import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'package:printing/printing.dart';
 import 'package:path_provider/path_provider.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'dart:io';
 import '../../../core/theme/app_colors.dart';
+import '../../../data/models/screening_model.dart';
+import '../../../data/services/firestore_service.dart';
 
-class HistoryAnalyticsScreen extends StatefulWidget {
+class HistoryAnalyticsScreen extends ConsumerStatefulWidget {
   const HistoryAnalyticsScreen({super.key});
 
   @override
-  State<HistoryAnalyticsScreen> createState() => _HistoryAnalyticsScreenState();
+  ConsumerState<HistoryAnalyticsScreen> createState() => _HistoryAnalyticsScreenState();
 }
 
-class _HistoryAnalyticsScreenState extends State<HistoryAnalyticsScreen> {
+class _HistoryAnalyticsScreenState extends ConsumerState<HistoryAnalyticsScreen> {
   String _selectedFilter = 'All';
   final List<String> _filters = ['All', 'Healthy', 'At Risk'];
+  final FirestoreService _firestoreService = FirestoreService();
 
-  // Sample data - in production, this would come from Firestore
-  final List<ScreeningRecord> _screeningRecords = [
-    ScreeningRecord(
-      date: '2 days ago',
-      result: 'Healthy',
-      confidence: 95,
-      svmScore: 94,
-      cnnScore: 96,
-    ),
-    ScreeningRecord(
-      date: '1 week ago',
-      result: 'Healthy',
-      confidence: 92,
-      svmScore: 90,
-      cnnScore: 94,
-    ),
-    ScreeningRecord(
-      date: '2 weeks ago',
-      result: 'Healthy',
-      confidence: 88,
-      svmScore: 87,
-      cnnScore: 89,
-    ),
-    ScreeningRecord(
-      date: '3 weeks ago',
-      result: 'Healthy',
-      confidence: 91,
-      svmScore: 89,
-      cnnScore: 93,
-    ),
-    ScreeningRecord(
-      date: '1 month ago',
-      result: 'Healthy',
-      confidence: 85,
-      svmScore: 83,
-      cnnScore: 87,
-    ),
-  ];
+  List<ScreeningModel> _screenings = [];
+  bool _isLoading = true;
 
-  List<ScreeningRecord> get _filteredRecords {
-    if (_selectedFilter == 'All') return _screeningRecords;
-    if (_selectedFilter == 'Healthy') {
-      return _screeningRecords.where((r) => r.result == 'Healthy').toList();
+  @override
+  void initState() {
+    super.initState();
+    _loadScreenings();
+  }
+
+  Future<void> _loadScreenings() async {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user == null) return;
+
+    setState(() {
+      _isLoading = true;
+    });
+
+    try {
+      _firestoreService.streamUserScreenings(user.uid).listen((screenings) {
+        if (mounted) {
+          setState(() {
+            _screenings = screenings;
+            _isLoading = false;
+          });
+        }
+      });
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+      }
     }
-    return _screeningRecords.where((r) => r.result == 'At Risk').toList();
+  }
+
+  List<ScreeningModel> get _filteredScreenings {
+    if (_selectedFilter == 'All') return _screenings;
+    if (_selectedFilter == 'Healthy') {
+      return _screenings.where((s) => s.prediction == 0).toList();
+    }
+    return _screenings.where((s) => s.prediction == 1).toList();
   }
 
   @override
@@ -117,47 +118,49 @@ class _HistoryAnalyticsScreenState extends State<HistoryAnalyticsScreen> {
           ),
           
           Expanded(
-            child: _filteredRecords.isEmpty
-                ? Center(
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(
-                          Icons.history,
-                          size: 64,
-                          color: AppColors.borderGrey,
+            child: _isLoading
+                ? const Center(child: CircularProgressIndicator())
+                : _filteredScreenings.isEmpty
+                    ? Center(
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(
+                              Icons.history,
+                              size: 64,
+                              color: AppColors.borderGrey,
+                            ),
+                            const SizedBox(height: 16),
+                            Text(
+                              'No screenings found',
+                              style: TextStyle(
+                                fontSize: 18,
+                                color: AppColors.textLight,
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                          ],
                         ),
-                        const SizedBox(height: 16),
-                        Text(
-                          'No screenings found',
-                          style: TextStyle(
-                            fontSize: 18,
-                            color: AppColors.textLight,
-                            fontWeight: FontWeight.w500,
-                          ),
-                        ),
-                      ],
-                    ),
-                  )
-                : ListView.builder(
-                    padding: const EdgeInsets.all(20),
-                    itemCount: _filteredRecords.length,
-                    itemBuilder: (context, index) {
-                      final record = _filteredRecords[index];
-                      return Padding(
-                        padding: const EdgeInsets.only(bottom: 12),
-                        child: _buildScreeningCard(record),
-                      );
-                    },
-                  ),
+                      )
+                    : ListView.builder(
+                        padding: const EdgeInsets.all(20),
+                        itemCount: _filteredScreenings.length,
+                        itemBuilder: (context, index) {
+                          final screening = _filteredScreenings[index];
+                          return Padding(
+                            padding: const EdgeInsets.only(bottom: 12),
+                            child: _buildScreeningCard(screening),
+                          );
+                        },
+                      ),
           ),
         ],
       ),
     );
   }
 
-  Widget _buildScreeningCard(ScreeningRecord record) {
-    final isHealthy = record.result == 'Healthy';
+  Widget _buildScreeningCard(ScreeningModel screening) {
+    final isHealthy = screening.prediction == 0;
     
     return Container(
       padding: const EdgeInsets.all(20),
@@ -206,7 +209,7 @@ class _HistoryAnalyticsScreenState extends State<HistoryAnalyticsScreen> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        record.result,
+                        screening.diagnosis,
                         style: TextStyle(
                           fontSize: 18,
                           fontWeight: FontWeight.bold,
@@ -215,7 +218,7 @@ class _HistoryAnalyticsScreenState extends State<HistoryAnalyticsScreen> {
                       ),
                       const SizedBox(height: 4),
                       Text(
-                        record.date,
+                        _formatDate(screening.timestamp),
                         style: TextStyle(
                           fontSize: 14,
                           color: AppColors.textLight,
@@ -233,7 +236,7 @@ class _HistoryAnalyticsScreenState extends State<HistoryAnalyticsScreen> {
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: Text(
-                  '${record.confidence}% Confidence',
+                  '${(screening.confidenceScore * 100).toStringAsFixed(1)}% Confidence',
                   style: TextStyle(
                     fontSize: 14,
                     color: AppColors.primaryBlue,
@@ -246,22 +249,20 @@ class _HistoryAnalyticsScreenState extends State<HistoryAnalyticsScreen> {
           
           const SizedBox(height: 16),
           
-          // Model Results
+          // Additional Info
           Row(
             children: [
-              Expanded(
-                child: _buildModelResult(
-                  label: 'SVM Model',
-                  score: record.svmScore,
-                ),
+              Icon(
+                Icons.analytics_rounded,
+                size: 16,
+                color: AppColors.textLight,
               ),
-              
-              const SizedBox(width: 12),
-              
-              Expanded(
-                child: _buildModelResult(
-                  label: 'CNN Model',
-                  score: record.cnnScore,
+              const SizedBox(width: 8),
+              Text(
+                '${screening.totalChunksAnalyzed} chunks analyzed',
+                style: TextStyle(
+                  fontSize: 14,
+                  color: AppColors.textLight,
                 ),
               ),
             ],
@@ -282,7 +283,7 @@ class _HistoryAnalyticsScreenState extends State<HistoryAnalyticsScreen> {
                     ),
                   ),
                   onPressed: () {
-                    _showDetailsDialog(record);
+                    _showDetailsDialog(screening);
                   },
                   child: const Text('View Details'),
                 ),
@@ -300,7 +301,7 @@ class _HistoryAnalyticsScreenState extends State<HistoryAnalyticsScreen> {
                     ),
                   ),
                   onPressed: () {
-                    _showShareDialog(record);
+                    _showShareDialog(screening);
                   },
                   icon: const Icon(Icons.share, size: 18),
                   label: const Text('Share'),
@@ -347,7 +348,7 @@ class _HistoryAnalyticsScreenState extends State<HistoryAnalyticsScreen> {
     );
   }
 
-  void _showDetailsDialog(ScreeningRecord record) {
+  void _showDetailsDialog(ScreeningModel screening) {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
@@ -357,36 +358,11 @@ class _HistoryAnalyticsScreenState extends State<HistoryAnalyticsScreen> {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              _buildDetailRow('Date', record.date),
-              _buildDetailRow('Result', record.result),
-              _buildDetailRow('Overall Confidence', '${record.confidence}%'),
-              _buildDetailRow('SVM Model Score', '${record.svmScore}%'),
-              _buildDetailRow('CNN Model Score', '${record.cnnScore}%'),
-              const SizedBox(height: 16),
-              const Text(
-                'Acoustic Features',
-                style: TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-              const SizedBox(height: 8),
-              _buildFeatureRow('Jitter (local)', '0.0032'),
-              _buildFeatureRow('Jitter (absolute)', '4.2e-05'),
-              _buildFeatureRow('Jitter (RAP)', '0.0016'),
-              _buildFeatureRow('Jitter (PPQ5)', '0.0021'),
-              _buildFeatureRow('Jitter (DDP)', '0.0048'),
-              _buildFeatureRow('Shimmer (local)', '0.028'),
-              _buildFeatureRow('Shimmer (local, dB)', '0.25'),
-              _buildFeatureRow('Shimmer (APQ3)', '0.015'),
-              _buildFeatureRow('Shimmer (APQ5)', '0.018'),
-              _buildFeatureRow('Shimmer (APQ11)', '0.022'),
-              _buildFeatureRow('Shimmer (DDA)', '0.045'),
-              _buildFeatureRow('NHR', '0.014'),
-              _buildFeatureRow('HNR', '24.5'),
-              _buildFeatureRow('RPDE', '0.42'),
-              _buildFeatureRow('DFA', '0.72'),
-              _buildFeatureRow('PPE', '0.18'),
+              _buildDetailRow('Date', _formatDate(screening.timestamp)),
+              _buildDetailRow('Result', screening.diagnosis),
+              _buildDetailRow('Overall Confidence', '${(screening.confidenceScore * 100).toStringAsFixed(1)}%'),
+              _buildDetailRow('Chunks Analyzed', '${screening.totalChunksAnalyzed}'),
+              _buildDetailRow('Screening ID', screening.id),
             ],
           ),
         ),
@@ -395,18 +371,12 @@ class _HistoryAnalyticsScreenState extends State<HistoryAnalyticsScreen> {
             onPressed: () => Navigator.pop(context),
             child: const Text('Close'),
           ),
-          ElevatedButton(
-            onPressed: () {
-              _exportToPDF(record);
-            },
-            child: const Text('Export PDF'),
-          ),
         ],
       ),
     );
   }
 
-  void _showShareDialog(ScreeningRecord record) {
+  void _showShareDialog(ScreeningModel screening) {
     // Generate a unique share link (in production, this would be a real URL)
     final shareLink = 'https://parkisense.app/share/${DateTime.now().millisecondsSinceEpoch}';
     
@@ -566,193 +536,30 @@ class _HistoryAnalyticsScreenState extends State<HistoryAnalyticsScreen> {
     );
   }
 
-  Future<void> _exportToPDF(ScreeningRecord record) async {
-    try {
-      final pdf = pw.Document();
-
-      pdf.addPage(
-        pw.Page(
-          pageFormat: PdfPageFormat.a4,
-          build: (pw.Context context) {
-            return pw.Column(
-              crossAxisAlignment: pw.CrossAxisAlignment.start,
-              children: [
-                pw.Header(
-                  level: 0,
-                  child: pw.Text('ParkiSense Screening Report'),
-                ),
-                pw.SizedBox(height: 20),
-                pw.Text('Date: ${record.date}'),
-                pw.Text('Result: ${record.result}'),
-                pw.Text('Overall Confidence: ${record.confidence}%'),
-                pw.SizedBox(height: 20),
-                pw.Header(level: 1, child: pw.Text('Model Results')),
-                pw.Text('SVM Model Score: ${record.svmScore}%'),
-                pw.Text('CNN Model Score: ${record.cnnScore}%'),
-                pw.SizedBox(height: 20),
-                pw.Header(level: 1, child: pw.Text('Acoustic Features')),
-                pw.Table(
-                  border: pw.TableBorder.all(color: PdfColors.grey400),
-                  columnWidths: {
-                    0: const pw.FlexColumnWidth(2),
-                    1: const pw.FlexColumnWidth(1),
-                  },
-                  children: [
-                    pw.TableRow(
-                      decoration: const pw.BoxDecoration(color: PdfColors.grey200),
-                      children: [
-                        pw.Padding(
-                          padding: const pw.EdgeInsets.all(8),
-                          child: pw.Text('Feature', style: pw.TextStyle(fontWeight: pw.FontWeight.bold)),
-                        ),
-                        pw.Padding(
-                          padding: const pw.EdgeInsets.all(8),
-                          child: pw.Text('Value', style: pw.TextStyle(fontWeight: pw.FontWeight.bold)),
-                        ),
-                      ],
-                    ),
-                    pw.TableRow(
-                      children: [
-                        pw.Padding(padding: const pw.EdgeInsets.all(8), child: pw.Text('Jitter (local)')),
-                        pw.Padding(padding: const pw.EdgeInsets.all(8), child: pw.Text('0.0032')),
-                      ],
-                    ),
-                    pw.TableRow(
-                      children: [
-                        pw.Padding(padding: const pw.EdgeInsets.all(8), child: pw.Text('Jitter (absolute)')),
-                        pw.Padding(padding: const pw.EdgeInsets.all(8), child: pw.Text('4.2e-05')),
-                      ],
-                    ),
-                    pw.TableRow(
-                      children: [
-                        pw.Padding(padding: const pw.EdgeInsets.all(8), child: pw.Text('Jitter (RAP)')),
-                        pw.Padding(padding: const pw.EdgeInsets.all(8), child: pw.Text('0.0016')),
-                      ],
-                    ),
-                    pw.TableRow(
-                      children: [
-                        pw.Padding(padding: const pw.EdgeInsets.all(8), child: pw.Text('Jitter (PPQ5)')),
-                        pw.Padding(padding: const pw.EdgeInsets.all(8), child: pw.Text('0.0021')),
-                      ],
-                    ),
-                    pw.TableRow(
-                      children: [
-                        pw.Padding(padding: const pw.EdgeInsets.all(8), child: pw.Text('Jitter (DDP)')),
-                        pw.Padding(padding: const pw.EdgeInsets.all(8), child: pw.Text('0.0048')),
-                      ],
-                    ),
-                    pw.TableRow(
-                      children: [
-                        pw.Padding(padding: const pw.EdgeInsets.all(8), child: pw.Text('Shimmer (local)')),
-                        pw.Padding(padding: const pw.EdgeInsets.all(8), child: pw.Text('0.028')),
-                      ],
-                    ),
-                    pw.TableRow(
-                      children: [
-                        pw.Padding(padding: const pw.EdgeInsets.all(8), child: pw.Text('Shimmer (local, dB)')),
-                        pw.Padding(padding: const pw.EdgeInsets.all(8), child: pw.Text('0.25')),
-                      ],
-                    ),
-                    pw.TableRow(
-                      children: [
-                        pw.Padding(padding: const pw.EdgeInsets.all(8), child: pw.Text('Shimmer (APQ3)')),
-                        pw.Padding(padding: const pw.EdgeInsets.all(8), child: pw.Text('0.015')),
-                      ],
-                    ),
-                    pw.TableRow(
-                      children: [
-                        pw.Padding(padding: const pw.EdgeInsets.all(8), child: pw.Text('Shimmer (APQ5)')),
-                        pw.Padding(padding: const pw.EdgeInsets.all(8), child: pw.Text('0.018')),
-                      ],
-                    ),
-                    pw.TableRow(
-                      children: [
-                        pw.Padding(padding: const pw.EdgeInsets.all(8), child: pw.Text('Shimmer (APQ11)')),
-                        pw.Padding(padding: const pw.EdgeInsets.all(8), child: pw.Text('0.022')),
-                      ],
-                    ),
-                    pw.TableRow(
-                      children: [
-                        pw.Padding(padding: const pw.EdgeInsets.all(8), child: pw.Text('Shimmer (DDA)')),
-                        pw.Padding(padding: const pw.EdgeInsets.all(8), child: pw.Text('0.045')),
-                      ],
-                    ),
-                    pw.TableRow(
-                      children: [
-                        pw.Padding(padding: const pw.EdgeInsets.all(8), child: pw.Text('NHR')),
-                        pw.Padding(padding: const pw.EdgeInsets.all(8), child: pw.Text('0.014')),
-                      ],
-                    ),
-                    pw.TableRow(
-                      children: [
-                        pw.Padding(padding: const pw.EdgeInsets.all(8), child: pw.Text('HNR')),
-                        pw.Padding(padding: const pw.EdgeInsets.all(8), child: pw.Text('24.5')),
-                      ],
-                    ),
-                    pw.TableRow(
-                      children: [
-                        pw.Padding(padding: const pw.EdgeInsets.all(8), child: pw.Text('RPDE')),
-                        pw.Padding(padding: const pw.EdgeInsets.all(8), child: pw.Text('0.42')),
-                      ],
-                    ),
-                    pw.TableRow(
-                      children: [
-                        pw.Padding(padding: const pw.EdgeInsets.all(8), child: pw.Text('DFA')),
-                        pw.Padding(padding: const pw.EdgeInsets.all(8), child: pw.Text('0.72')),
-                      ],
-                    ),
-                    pw.TableRow(
-                      children: [
-                        pw.Padding(padding: const pw.EdgeInsets.all(8), child: pw.Text('PPE')),
-                        pw.Padding(padding: const pw.EdgeInsets.all(8), child: pw.Text('0.18')),
-                      ],
-                    ),
-                  ],
-                ),
-                pw.SizedBox(height: 40),
-                pw.Text(
-                  'This report was generated by ParkiSense - Parkinson\'s Disease Voice Screening Application',
-                  style: pw.TextStyle(fontSize: 10, fontStyle: pw.FontStyle.italic),
-                ),
-              ],
-            );
-          },
-        ),
-      );
-
-      await Printing.sharePdf(
-        bytes: await pdf.save(),
-        filename: 'parkisense_screening_${DateTime.now().millisecondsSinceEpoch}.pdf',
-      );
-
-      if (mounted) {
-        Navigator.pop(context);
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('PDF exported successfully'),
-            backgroundColor: AppColors.successGreen,
-          ),
-        );
-      }
-    } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Error exporting PDF: $e'),
-            backgroundColor: AppColors.accentWarningRed,
-          ),
-        );
-      }
+  String _formatDate(DateTime date) {
+    final now = DateTime.now();
+    final difference = now.difference(date);
+    
+    if (difference.inDays == 0) {
+      return 'Today';
+    } else if (difference.inDays == 1) {
+      return 'Yesterday';
+    } else if (difference.inDays < 7) {
+      return '${difference.inDays} days ago';
+    } else if (difference.inDays < 30) {
+      return '${(difference.inDays / 7).floor()} weeks ago';
+    } else {
+      return '${(difference.inDays / 30).floor()} months ago';
     }
   }
 
   Future<void> _exportToCSV() async {
     try {
       final csvData = StringBuffer();
-      csvData.writeln('Date,Result,Confidence,SVM Score,CNN Score');
+      csvData.writeln('Date,Result,Confidence,Chunks Analyzed');
       
-      for (final record in _screeningRecords) {
-        csvData.writeln('${record.date},${record.result},${record.confidence},${record.svmScore},${record.cnnScore}');
+      for (final screening in _screenings) {
+        csvData.writeln('${_formatDate(screening.timestamp)},${screening.diagnosis},${(screening.confidenceScore * 100).toStringAsFixed(1)},${screening.totalChunksAnalyzed}');
       }
 
       final directory = await getApplicationDocumentsDirectory();
@@ -779,20 +586,4 @@ class _HistoryAnalyticsScreenState extends State<HistoryAnalyticsScreen> {
       }
     }
   }
-}
-
-class ScreeningRecord {
-  final String date;
-  final String result;
-  final int confidence;
-  final int svmScore;
-  final int cnnScore;
-
-  ScreeningRecord({
-    required this.date,
-    required this.result,
-    required this.confidence,
-    required this.svmScore,
-    required this.cnnScore,
-  });
 }

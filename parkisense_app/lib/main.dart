@@ -1,10 +1,12 @@
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'core/theme/app_theme.dart';
 import 'package:parkisense_app/presentation/screens/auth/onboarding_screen.dart';
 import 'package:parkisense_app/presentation/screens/auth/welcome_screen.dart';
 import 'package:parkisense_app/presentation/screens/auth/login_screen.dart';
+import 'package:parkisense_app/presentation/screens/auth/doctor_login_screen.dart';
 import 'package:parkisense_app/presentation/screens/auth/signup_screen.dart';
 import 'package:parkisense_app/presentation/screens/auth/forgot_password_screen.dart';
 import 'package:parkisense_app/presentation/screens/dashboard/home_dashboard_screen.dart';
@@ -13,6 +15,11 @@ import 'package:parkisense_app/presentation/screens/screening/processing_screen.
 import 'package:parkisense_app/presentation/screens/screening/results_screen.dart';
 import 'package:parkisense_app/presentation/screens/profile/profile_settings_screen.dart';
 import 'package:parkisense_app/presentation/screens/history/history_analytics_screen.dart';
+import 'package:parkisense_app/presentation/screens/appointment/appointment_booking_screen.dart';
+import 'package:parkisense_app/presentation/screens/main_navigation_screen.dart';
+import 'package:parkisense_app/presentation/screens/doctor/doctor_dashboard_screen.dart';
+import 'package:parkisense_app/presentation/screens/doctor/doctor_schedule_screen.dart';
+import 'package:parkisense_app/presentation/screens/doctor/doctor_profile_screen.dart';
 import 'package:parkisense_app/providers/theme_provider.dart';
 
 void main() async {
@@ -56,13 +63,41 @@ class ParkiSenseApp extends ConsumerWidget {
         '/': (context) => const OnboardingScreen(),
         '/welcome': (context) => const WelcomeScreen(),
         '/login': (context) => const LoginScreen(),
+        '/doctor-login': (context) => const DoctorLoginScreen(),
+        '/doctor-dashboard': (context) => const DoctorDashboardScreen(),
+        '/doctor-profile': (context) => const DoctorProfileScreen(),
         '/signup': (context) => const SignUpScreen(),
         '/forgot-password': (context) => const ForgotPasswordScreen(),
+        '/main': (context) => const MainNavigationScreen(),
         '/home': (context) => const HomeDashboardScreen(),
         '/voice-screening': (context) => const VoiceScreeningScreen(),
         '/processing': (context) => const ProcessingScreen(audioPath: ''),
         '/history': (context) => const HistoryAnalyticsScreen(),
+        '/appointment': (context) => const AppointmentBookingScreen(),
         '/profile': (context) => const ProfileSettingsScreen(),
+      },
+      onGenerateRoute: (settings) {
+        // Check auth state for protected routes
+        final user = FirebaseAuth.instance.currentUser;
+        
+        // If user is logged in and tries to access auth screens, redirect to main
+        if (user != null && (settings.name == '/' || settings.name == '/welcome' || settings.name == '/login' || settings.name == '/signup')) {
+          return MaterialPageRoute(builder: (context) => const MainNavigationScreen());
+        }
+        
+        // If user is not logged in and tries to access protected routes, redirect to login
+        if (user == null && (settings.name == '/main' || settings.name == '/home' || settings.name == '/history' || settings.name == '/appointment' || settings.name == '/profile' || settings.name == '/doctor-dashboard' || settings.name == '/doctor-profile')) {
+          return MaterialPageRoute(builder: (context) => const LoginScreen());
+        }
+        
+        if (settings.name == '/doctor-schedule') {
+          final args = settings.arguments as Map<String, dynamic>?;
+          final patientId = args?['patientId'] ?? '';
+          return MaterialPageRoute(
+            builder: (context) => DoctorScheduleScreen(patientId: patientId),
+          );
+        }
+        return null;
       },
     );
   }

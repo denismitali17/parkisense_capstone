@@ -95,7 +95,7 @@ class _VoiceScreeningScreenState extends State<VoiceScreeningScreen> with Single
       );
       if (result != null && result.files.single.bytes != null) {
         if (mounted) {
-          Navigator.push(context, MaterialPageRoute(builder: (context) => const ProcessingScreen(audioPath: "UploadedFile")));
+          Navigator.push(context, MaterialPageRoute(builder: (context) => ProcessingScreen(audioBytes: result.files.single.bytes!)));
         }
       }
     } catch (e) {

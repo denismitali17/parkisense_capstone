@@ -1,11 +1,51 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../../../core/theme/app_colors.dart';
+import '../../../data/models/screening_model.dart';
+import '../../../data/services/firestore_service.dart';
 import '../profile/profile_settings_screen.dart';
 
-class HomeDashboardScreen extends StatelessWidget {
+class HomeDashboardScreen extends ConsumerStatefulWidget {
   const HomeDashboardScreen({super.key});
+
+  @override
+  ConsumerState<HomeDashboardScreen> createState() => _HomeDashboardScreenState();
+}
+
+class _HomeDashboardScreenState extends ConsumerState<HomeDashboardScreen> {
+  final FirestoreService _firestoreService = FirestoreService();
+  List<ScreeningModel> _screenings = [];
+  bool _isLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadScreenings();
+  }
+
+  Future<void> _loadScreenings() async {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user == null) return;
+
+    try {
+      _firestoreService.streamUserScreenings(user.uid).listen((screenings) {
+        if (mounted) {
+          setState(() {
+            _screenings = screenings.take(3).toList();
+            _isLoading = false;
+          });
+        }
+      });
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+      }
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -64,7 +104,7 @@ class HomeDashboardScreen extends StatelessWidget {
                           ),
                           const SizedBox(width: 4),
                           Text(
-                            'Last screening: 2 days ago',
+                            _screenings.isEmpty ? 'No screenings yet' : 'Last screening: ${_formatDate(_screenings.first.timestamp)}',
                             style: TextStyle(
                               fontSize: 12,
                               color: AppColors.primaryBlue,
@@ -165,33 +205,31 @@ class HomeDashboardScreen extends StatelessWidget {
             
             const SizedBox(height: 16),
             
-            _buildScreeningItem(
-              context: context,
-              date: '2 days ago',
-              result: 'Healthy',
-              confidence: '95%',
-              isHealthy: true,
-            ),
-            
-            const SizedBox(height: 12),
-            
-            _buildScreeningItem(
-              context: context,
-              date: '1 week ago',
-              result: 'Healthy',
-              confidence: '92%',
-              isHealthy: true,
-            ),
-            
-            const SizedBox(height: 12),
-            
-            _buildScreeningItem(
-              context: context,
-              date: '2 weeks ago',
-              result: 'Healthy',
-              confidence: '88%',
-              isHealthy: true,
-            ),
+            _isLoading
+                ? const Center(child: CircularProgressIndicator())
+                : _screenings.isEmpty
+                    ? Center(
+                        child: Text(
+                          'No screenings yet',
+                          style: GoogleFonts.poppins(
+                            color: AppColors.textLight,
+                          ),
+                        ),
+                      )
+                    : Column(
+                        children: _screenings.map((screening) {
+                          return Padding(
+                            padding: const EdgeInsets.only(bottom: 12),
+                            child: _buildScreeningItem(
+                              context: context,
+                              date: _formatDate(screening.timestamp),
+                              result: screening.diagnosis,
+                              confidence: '${(screening.confidenceScore * 100).toStringAsFixed(1)}%',
+                              isHealthy: screening.prediction == 0,
+                            ),
+                          );
+                        }).toList(),
+                      ),
             
             const SizedBox(height: 24),
             
@@ -308,7 +346,7 @@ class HomeDashboardScreen extends StatelessWidget {
                     ),
                     const SizedBox(height: 4),
                     Text(
-                      '5',
+                      '${_screenings.length}',
                       style: TextStyle(
                         fontSize: 32,
                         fontWeight: FontWeight.bold,
@@ -333,13 +371,21 @@ class HomeDashboardScreen extends StatelessWidget {
                     Row(
                       children: [
                         Icon(
-                          Icons.check_circle_rounded,
-                          color: Colors.green.shade300,
+                          _screenings.isEmpty 
+                              ? Icons.help_outline
+                              : (_screenings.first.prediction == 0 
+                                  ? Icons.check_circle_rounded 
+                                  : Icons.warning_rounded),
+                          color: _screenings.isEmpty 
+                              ? Colors.grey.shade300
+                              : (_screenings.first.prediction == 0 
+                                  ? Colors.green.shade300 
+                                  : Colors.orange.shade300),
                           size: 24,
                         ),
                         const SizedBox(width: 4),
                         Text(
-                          'Healthy',
+                          _screenings.isEmpty ? 'No Data' : (_screenings.first.prediction == 0 ? 'Healthy' : 'At Risk'),
                           style: TextStyle(
                             fontSize: 24,
                             fontWeight: FontWeight.bold,
@@ -375,7 +421,7 @@ class HomeDashboardScreen extends StatelessWidget {
           borderRadius: BorderRadius.circular(16),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.05),
+              color: Theme.of(context).shadowColor.withOpacity(0.1),
               blurRadius: 10,
               offset: const Offset(0, 4),
             ),
@@ -583,5 +629,22 @@ class HomeDashboardScreen extends StatelessWidget {
         ],
       ),
     );
+  }
+
+  String _formatDate(DateTime date) {
+    final now = DateTime.now();
+    final difference = now.difference(date);
+    
+    if (difference.inDays == 0) {
+      return 'Today';
+    } else if (difference.inDays == 1) {
+      return 'Yesterday';
+    } else if (difference.inDays < 7) {
+      return '${difference.inDays} days ago';
+    } else if (difference.inDays < 30) {
+      return '${(difference.inDays / 7).floor()} weeks ago';
+    } else {
+      return '${(difference.inDays / 30).floor()} months ago';
+    }
   }
 }

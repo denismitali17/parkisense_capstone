@@ -3,13 +3,17 @@ import 'dart:io';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import 'package:google_fonts/google_fonts.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../data/models/screening_model.dart';
+import '../../../../data/services/firestore_service.dart';
 import 'results_screen.dart';
 
 class ProcessingScreen extends StatefulWidget {
-  final String audioPath;
-  const ProcessingScreen({super.key, required this.audioPath});
+  final String? audioPath;
+  final List<int>? audioBytes;
+  const ProcessingScreen({super.key, this.audioPath, this.audioBytes});
 
   @override
   State<ProcessingScreen> createState() => _ProcessingScreenState();
@@ -18,6 +22,7 @@ class ProcessingScreen extends StatefulWidget {
 class _ProcessingScreenState extends State<ProcessingScreen> {
   String _currentStage = "Reading voice recording data...";
   double _progressValue = 0.20;
+  final FirestoreService _firestoreService = FirestoreService();
 
   @override
   void initState() {
@@ -29,23 +34,31 @@ class _ProcessingScreenState extends State<ProcessingScreen> {
     try {
       List<int> audioBytes;
 
-      // Read file data securely depending on platform environment
-      if (kIsWeb || widget.audioPath.startsWith('blob:') || widget.audioPath.startsWith('http')) {
-        setState(() {
-          _currentStage = "Fetching browser audio payload...";
-        });
-        final response = await http.get(Uri.parse(widget.audioPath));
-        if (response.statusCode == 200) {
-          audioBytes = response.bodyBytes;
+      // Handle uploaded file bytes directly
+      if (widget.audioBytes != null) {
+        audioBytes = widget.audioBytes!;
+      } 
+      // Read file data from path for recorded files
+      else if (widget.audioPath != null) {
+        if (kIsWeb || widget.audioPath!.startsWith('blob:') || widget.audioPath!.startsWith('http')) {
+          setState(() {
+            _currentStage = "Fetching browser audio payload...";
+          });
+          final response = await http.get(Uri.parse(widget.audioPath!));
+          if (response.statusCode == 200) {
+            audioBytes = response.bodyBytes;
+          } else {
+            throw Exception("Failed to extract data bytes from browser blob.");
+          }
         } else {
-          throw Exception("Failed to extract data bytes from browser blob.");
+          final File audioFile = File(widget.audioPath!);
+          if (!await audioFile.exists()) {
+            throw Exception("Audio file path could not be located on this device.");
+          }
+          audioBytes = await audioFile.readAsBytes();
         }
       } else {
-        final File audioFile = File(widget.audioPath);
-        if (!await audioFile.exists()) {
-          throw Exception("Audio file path could not be located on this device.");
-        }
-        audioBytes = await audioFile.readAsBytes();
+        throw Exception("No audio data provided.");
       }
 
       setState(() {
@@ -63,6 +76,7 @@ class _ProcessingScreenState extends State<ProcessingScreen> {
           'file',
           audioBytes,
           filename: 'voice_sample.wav',
+          contentType: http.MediaType.parse('audio/wav'),
         ),
       );
 
@@ -78,6 +92,28 @@ class _ProcessingScreenState extends State<ProcessingScreen> {
       if (apiResponse.statusCode == 200) {
         final Map<String, dynamic> data = jsonDecode(apiResponse.body);
 
+        final screening = ScreeningModel(
+          id: data['id'] ?? 'scr_${DateTime.now().millisecondsSinceEpoch}',
+          userId: data['user_id'] ?? 'current_practitioner',
+          audioUrl: widget.audioPath ?? 'uploaded_file',
+          timestamp: DateTime.now(),
+          prediction: data['prediction'] ?? 0,
+          diagnosis: data['diagnosis'] ?? (data['prediction'] == 1 ? 'Positive Indicators Detected' : 'Negative / Normal'),
+          confidenceScore: (data['confidence_score'] as num?)?.toDouble() ?? 0.0,
+          totalChunksAnalyzed: data['total_chunks_analyzed'] ?? 1,
+        );
+
+        // Save screening to Firestore
+        final user = FirebaseAuth.instance.currentUser;
+        if (user != null) {
+          try {
+            await _firestoreService.saveScreening(user.uid, screening);
+          } catch (e) {
+            // Log error but don't block the user from seeing results
+            print('Error saving screening to Firestore: $e');
+          }
+        }
+
         setState(() {
           _currentStage = "Structuring analysis report...";
           _progressValue = 1.0;
@@ -88,19 +124,19 @@ class _ProcessingScreenState extends State<ProcessingScreen> {
             context,
             MaterialPageRoute(
               builder: (context) => ResultsScreen(
-                screening: ScreeningModel(
-                  id: data['id'] ?? 'scr_${DateTime.now().millisecondsSinceEpoch}',
-                  userId: data['user_id'] ?? 'current_practitioner',
-                  audioUrl: widget.audioPath,
-                  timestamp: DateTime.now(),
-                  prediction: data['prediction'] ?? 0,
-                  diagnosis: data['diagnosis'] ?? (data['prediction'] == 1 ? 'Positive Indicators Detected' : 'Negative / Normal'),
-                  confidenceScore: (data['confidence'] as num?)?.toDouble() ?? 0.95,
-                  totalChunksAnalyzed: data['chunks_analyzed'] ?? 10,
-                ),
+                screening: screening,
               ),
             ),
           );
+          
+          // Show appointment booking popup if Parkinson's detected
+          if (data['prediction'] == 1) {
+            Future.delayed(const Duration(milliseconds: 500), () {
+              if (context.mounted) {
+                _showAppointmentDialog(context);
+              }
+            });
+          }
         }
       } else {
         throw Exception('Server rejected payload (${apiResponse.statusCode}): ${apiResponse.body}');
@@ -134,6 +170,67 @@ class _ProcessingScreenState extends State<ProcessingScreen> {
             LinearProgressIndicator(value: _progressValue, backgroundColor: AppColors.borderGrey, color: AppColors.primaryBlue),
           ],
         ),
+      ),
+    );
+  }
+
+  void _showAppointmentDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text(
+          'Parkinson\'s Detected',
+          style: GoogleFonts.poppins(
+            fontWeight: FontWeight.bold,
+            color: AppColors.dangerRed,
+          ),
+        ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Icon(
+              Icons.warning_rounded,
+              color: AppColors.dangerRed,
+              size: 48,
+            ),
+            const SizedBox(height: 16),
+            Text(
+              'Based on the analysis, indicators of Parkinson\'s disease were detected. We recommend booking an appointment with a specialist for further evaluation.',
+              style: GoogleFonts.poppins(
+                fontSize: 14,
+                height: 1.4,
+              ),
+              textAlign: TextAlign.center,
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: Text(
+              'Maybe Later',
+              style: GoogleFonts.poppins(
+                color: AppColors.textLight,
+              ),
+            ),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              Navigator.pop(context);
+              Navigator.pushNamed(context, '/appointment');
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppColors.primaryBlue,
+              foregroundColor: Colors.white,
+            ),
+            child: Text(
+              'Book Appointment',
+              style: GoogleFonts.poppins(
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }
