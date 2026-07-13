@@ -39,6 +39,7 @@ ParkiSense captures a short, sustained vowel recording from the user's phone, se
 |  Live demo (Appetize, no install needed) | https://appetize.io/embed/b_ormwwyg5u657hz5dajpbuu7zue |
 |  Video  | https://www.youtube.com/watch?v=A1xcYNQBxTs |
 |  Downloadable APK | https://drive.google.com/file/d/1oA04WSMAeMJv2R7JIqiq9eu3_wyPAHnA/view |
+|  Hugging Face Public Link | https://huggingface.co/spaces/denismitali/parkisense_space |
 
 
 ---
