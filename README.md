@@ -35,6 +35,7 @@ ParkiSense captures a short, sustained vowel recording from the user's phone, se
 
 | Resource | Link |
 |---|---|
+|  Deployed web application| https://parkisens.netlify.app/ |
 |  Production API (docs) | https://parkisense-api.onrender.com/docs |
 |  Live demo (Appetize, no install needed) | https://appetize.io/embed/b_ormwwyg5u657hz5dajpbuu7zue |
 |  Video  | https://www.youtube.com/watch?v=A1xcYNQBxTs |
