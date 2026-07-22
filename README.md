@@ -38,7 +38,7 @@ ParkiSense captures a short, sustained vowel recording from the user's phone, se
 |  Production API (docs) | https://parkisense-api.onrender.com/docs |
 |  Live demo (Appetize, no install needed) | https://appetize.io/embed/b_ormwwyg5u657hz5dajpbuu7zue |
 |  Video  | https://www.youtube.com/watch?v=A1xcYNQBxTs |
-|  Downloadable APK | https://drive.google.com/file/d/1oA04WSMAeMJv2R7JIqiq9eu3_wyPAHnA/view |
+|  Downloadable APK | https://drive.google.com/file/d/1oA04WSMAeMJv2R7JIqiq9eu3_wyPAHnA/view?usp=sharing |
 |  Hugging Face Public Link | https://huggingface.co/spaces/denismitali/parkisense_space |
 
 
@@ -110,7 +110,7 @@ This streams a real Android instance running ParkiSense straight from your brows
 
 ### Option C: Install the APK on a physical Android device
 
-1. Download the APK from the [Google Drive link](https://drive.google.com/file/d/1oA04WSMAeMJv2R7JIqiq9eu3_wyPAHnA/view) onto your Android phone.
+1. Download the APK from the [Google Drive link](https://drive.google.com/file/d/1oA04WSMAeMJv2R7JIqiq9eu3_wyPAHnA/view?usp=sharing) onto your Android phone.
 2. Open the downloaded file. If Android blocks the install, go to **Settings → Apps → Special app access → Install unknown apps**, select the app you downloaded with (e.g. Chrome or Files), and enable **Allow from this source**.
 3. Return to the downloaded file and tap **Install**.
 4. Open **ParkiSense** and sign up or log in.
