@@ -236,7 +236,7 @@ class _DoctorLoginScreenState extends ConsumerState<DoctorLoginScreen> {
                 // Back to User Login
                 TextButton(
                   onPressed: () {
-                    Navigator.pop(context);
+                    Navigator.pushReplacementNamed(context, '/login');
                   },
                   child: Text(
                     'Back to Patient Login',

@@ -326,7 +326,10 @@ class _DoctorProfileScreenState extends ConsumerState<DoctorProfileScreen> {
   Future<void> _logout() async {
     await FirebaseAuth.instance.signOut();
     if (mounted) {
-      Navigator.pushReplacementNamed(context, '/doctor-login');
+      Navigator.of(context).pushNamedAndRemoveUntil(
+        '/doctor-login',
+        (route) => false,
+      );
     }
   }
 }

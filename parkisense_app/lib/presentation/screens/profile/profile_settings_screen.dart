@@ -1,5 +1,6 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'dart:convert';
 import 'dart:io';
@@ -8,6 +9,8 @@ import 'package:share_plus/share_plus.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../providers/auth_provider.dart';
 import '../../../providers/theme_provider.dart';
+import '../../../data/services/firestore_service.dart';
+import '../../../data/models/screening_model.dart';
 import '../auth/login_screen.dart';
 
 class ProfileSettingsScreen extends ConsumerWidget {
@@ -192,16 +195,6 @@ class ProfileSettingsScreen extends ConsumerWidget {
             _buildSettingsCard(
               context: context,
               children: [
-                _buildSettingsTile(
-                  context: context,
-                  icon: Icons.download_outlined,
-                  title: 'Export My Data',
-                  subtitle: 'Download all your data as JSON',
-                  onTap: () {
-                    _exportUserData(context);
-                  },
-                ),
-                _buildDivider(),
                 _buildSettingsTile(
                   context: context,
                   icon: Icons.picture_as_pdf_outlined,
@@ -976,90 +969,93 @@ class ProfileSettingsScreen extends ConsumerWidget {
     );
   }
 
-  Future<void> _exportUserData(BuildContext context) async {
-    try {
-      final user = FirebaseAuth.instance.currentUser;
-      if (user == null) return;
-
-      final userData = {
-        'uid': user.uid,
-        'email': user.email,
-        'displayName': user.displayName,
-        'photoURL': user.photoURL,
-        'emailVerified': user.emailVerified,
-        'creationTime': user.metadata.creationTime?.toIso8601String(),
-        'lastSignInTime': user.metadata.lastSignInTime?.toIso8601String(),
-        'exportDate': DateTime.now().toIso8601String(),
-      };
-
-      final jsonString = json.encode(userData);
-      
-      final directory = await getApplicationDocumentsDirectory();
-      final file = File('${directory.path}/parkisense_data_export.json');
-      await file.writeAsString(jsonString);
-
-      if (context.mounted) {
-        await Share.shareXFiles(
-          [XFile(file.path)],
-          text: 'ParkiSense User Data Export',
-        );
-        
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Data exported successfully'),
-            backgroundColor: AppColors.successGreen,
-          ),
-        );
-      }
-    } catch (e) {
-      if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Error exporting data: $e'),
-            backgroundColor: AppColors.dangerRed,
-          ),
-        );
-      }
-    }
-  }
-
   Future<void> _exportToPDF(BuildContext context) async {
     try {
-      // For now, we'll create a simple text file as a placeholder
-      // In a real implementation, you would use the pdf package
       final user = FirebaseAuth.instance.currentUser;
       if (user == null) return;
 
-      final content = '''
-ParkiSense Screening Records Export
-=====================================
+      final firestoreService = FirestoreService();
+      
+      // Fetch screening records
+      final screeningsStream = firestoreService.streamUserScreenings(user.uid);
+      final screenings = await screeningsStream.first;
 
-User: ${user.email}
-Date: ${DateTime.now().toIso8601String()}
+      if (screenings.isEmpty) {
+        if (context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('No screening records found to export'),
+              backgroundColor: AppColors.dangerRed,
+            ),
+          );
+        }
+        return;
+      }
 
-This is a placeholder for PDF export functionality.
-In a full implementation, this would generate a PDF report
-of all screening records with charts and detailed analysis.
+      // Generate report content
+      final buffer = StringBuffer();
+      buffer.writeln('ParkiSense Screening Records Export');
+      buffer.writeln('=' * 50);
+      buffer.writeln('');
+      buffer.writeln('User: ${user.email}');
+      buffer.writeln('Export Date: ${DateTime.now().toIso8601String()}');
+      buffer.writeln('Total Records: ${screenings.length}');
+      buffer.writeln('');
+      buffer.writeln('-' * 50);
+      buffer.writeln('');
 
-Note: This feature requires the pdf package to be fully implemented.
-      ''';
+      for (int i = 0; i < screenings.length; i++) {
+        final screening = screenings[i];
+        buffer.writeln('Record #${i + 1}');
+        buffer.writeln('-' * 30);
+        buffer.writeln('Date: ${screening.timestamp.toIso8601String()}');
+        buffer.writeln('Diagnosis: ${screening.diagnosis}');
+        buffer.writeln('Prediction: ${screening.prediction == 1 ? "Parkinson\'s Detected" : "Healthy Control"}');
+        buffer.writeln('Confidence Score: ${(screening.confidenceScore * 100).toStringAsFixed(2)}%');
+        buffer.writeln('Total Chunks Analyzed: ${screening.totalChunksAnalyzed}');
+        buffer.writeln('Audio URL: ${screening.audioUrl}');
+        if (screening.metadata != null) {
+          buffer.writeln('Metadata: ${screening.metadata.toString()}');
+        }
+        buffer.writeln('');
+      }
 
-      final directory = await getApplicationDocumentsDirectory();
-      final file = File('${directory.path}/parkisense_records.txt');
-      await file.writeAsString(content);
+      buffer.writeln('=' * 50);
+      buffer.writeln('End of Report');
+      buffer.writeln('');
+      buffer.writeln('Generated by ParkiSense - Voice-Based Parkinson\'s Screening');
 
-      if (context.mounted) {
-        await Share.shareXFiles(
-          [XFile(file.path)],
-          text: 'ParkiSense Records Export',
-        );
+      final content = buffer.toString();
+      final fileName = 'parkisense_records_${DateTime.now().millisecondsSinceEpoch}.txt';
+
+      if (kIsWeb) {
+        // On web, use a different approach without dart:html
+        // For now, we'll use share_plus which works on web
+        await Share.share(content, subject: 'ParkiSense Records Export');
         
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Records exported successfully'),
-            backgroundColor: AppColors.successGreen,
-          ),
-        );
+        if (context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Records exported successfully'),
+              backgroundColor: AppColors.successGreen,
+            ),
+          );
+        }
+      } else {
+        // On mobile, save to app documents directory
+        final directory = await getApplicationDocumentsDirectory();
+        final file = File('${directory.path}/$fileName');
+        await file.writeAsString(content);
+
+        if (context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Records saved to: ${file.path}'),
+              backgroundColor: AppColors.successGreen,
+              duration: const Duration(seconds: 4),
+            ),
+          );
+        }
       }
     } catch (e) {
       if (context.mounted) {

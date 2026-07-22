@@ -5,13 +5,31 @@ import 'package:flutter/services.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../data/models/screening_model.dart';
 
-class ResultsScreen extends StatelessWidget {
+class ResultsScreen extends StatefulWidget {
   final ScreeningModel screening;
-  const ResultsScreen({super.key, required this.screening});
+  final bool showAppointmentDialog;
+  const ResultsScreen({super.key, required this.screening, this.showAppointmentDialog = false});
+
+  @override
+  State<ResultsScreen> createState() => _ResultsScreenState();
+}
+
+class _ResultsScreenState extends State<ResultsScreen> {
+  @override
+  void initState() {
+    super.initState();
+    if (widget.showAppointmentDialog) {
+      Future.delayed(const Duration(milliseconds: 500), () {
+        if (mounted) {
+          _showAppointmentDialog();
+        }
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
-    final bool isDetected = screening.prediction == 1;
+    final bool isDetected = widget.screening.prediction == 1;
 
     return Scaffold(
       appBar: AppBar(
@@ -45,7 +63,7 @@ class ResultsScreen extends StatelessWidget {
                   ),
                   const SizedBox(height: 8),
                   Text(
-                    screening.diagnosis,
+                    widget.screening.diagnosis,
                     style: GoogleFonts.poppins(color: Colors.white, fontSize: 26, fontWeight: FontWeight.bold),
                   ),
                   const SizedBox(height: 16),
@@ -57,7 +75,7 @@ class ResultsScreen extends StatelessWidget {
                         style: GoogleFonts.poppins(color: Colors.white.withOpacity(0.9), fontSize: 14),
                       ),
                       Text(
-                        '${(screening.confidenceScore * 100).toStringAsFixed(2)}%',
+                        '${(widget.screening.confidenceScore * 100).toStringAsFixed(2)}%',
                         style: GoogleFonts.poppins(color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold),
                       ),
                     ],
@@ -76,7 +94,7 @@ class ResultsScreen extends StatelessWidget {
                 padding: const EdgeInsets.all(16.0),
                 child: Column(
                   children: [
-                    _buildFeatureMetricRow(context, 'Total Audio Chunks Evaluated', '${screening.totalChunksAnalyzed} Blocks'),
+                    _buildFeatureMetricRow(context, 'Total Audio Chunks Evaluated', '${widget.screening.totalChunksAnalyzed} Blocks'),
                     const Divider(),
                     _buildFeatureMetricRow(context, 'Core Jitter Dist. Variant', 'Evaluated (16-bit Matrix)'),
                     const Divider(),
@@ -158,7 +176,7 @@ class ResultsScreen extends StatelessWidget {
   }
 
   void _showShareDialog(BuildContext context) {
-    final shareLink = 'https://parkisense.app/report/${screening.id}';
+    final shareLink = 'https://parkisense.app/report/${widget.screening.id}';
     
     showDialog(
       context: context,
@@ -221,6 +239,67 @@ class ResultsScreen extends StatelessWidget {
             icon: const Icon(Icons.close),
             label: Text(
               'Close',
+              style: GoogleFonts.poppins(
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showAppointmentDialog() {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text(
+          'Parkinson\'s Detected',
+          style: GoogleFonts.poppins(
+            fontWeight: FontWeight.bold,
+            color: AppColors.dangerRed,
+          ),
+        ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Icon(
+              Icons.warning_rounded,
+              color: AppColors.dangerRed,
+              size: 48,
+            ),
+            const SizedBox(height: 16),
+            Text(
+              'Based on the analysis, indicators of Parkinson\'s disease were detected. We recommend booking an appointment with a specialist for further evaluation.',
+              style: GoogleFonts.poppins(
+                fontSize: 14,
+                height: 1.4,
+              ),
+              textAlign: TextAlign.center,
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: Text(
+              'Maybe Later',
+              style: GoogleFonts.poppins(
+                color: AppColors.textLight,
+              ),
+            ),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              Navigator.pop(context);
+              Navigator.pushNamed(context, '/appointment');
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppColors.primaryBlue,
+              foregroundColor: Colors.white,
+            ),
+            child: Text(
+              'Book Appointment',
               style: GoogleFonts.poppins(
                 fontWeight: FontWeight.w600,
               ),

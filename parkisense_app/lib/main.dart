@@ -77,19 +77,7 @@ class ParkiSenseApp extends ConsumerWidget {
         '/profile': (context) => const ProfileSettingsScreen(),
       },
       onGenerateRoute: (settings) {
-        // Check auth state for protected routes
-        final user = FirebaseAuth.instance.currentUser;
-        
-        // If user is logged in and tries to access auth screens, redirect to main
-        if (user != null && (settings.name == '/' || settings.name == '/welcome' || settings.name == '/login' || settings.name == '/signup')) {
-          return MaterialPageRoute(builder: (context) => const MainNavigationScreen());
-        }
-        
-        // If user is not logged in and tries to access protected routes, redirect to login
-        if (user == null && (settings.name == '/main' || settings.name == '/home' || settings.name == '/history' || settings.name == '/appointment' || settings.name == '/profile' || settings.name == '/doctor-dashboard' || settings.name == '/doctor-profile')) {
-          return MaterialPageRoute(builder: (context) => const LoginScreen());
-        }
-        
+        // Only handle special routes that require arguments
         if (settings.name == '/doctor-schedule') {
           final args = settings.arguments as Map<String, dynamic>?;
           final patientId = args?['patientId'] ?? '';
@@ -97,7 +85,7 @@ class ParkiSenseApp extends ConsumerWidget {
             builder: (context) => DoctorScheduleScreen(patientId: patientId),
           );
         }
-        return null;
+        return null; // Let the normal routes handle everything else
       },
     );
   }

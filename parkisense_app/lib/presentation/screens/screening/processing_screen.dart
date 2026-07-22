@@ -53,7 +53,7 @@ class _ProcessingScreenState extends State<ProcessingScreen> {
         } else {
           final File audioFile = File(widget.audioPath!);
           if (!await audioFile.exists()) {
-            throw Exception("Audio file path could not be located on this device.");
+            throw Exception("Audio file path could not be located on this device. Path: ${widget.audioPath}");
           }
           audioBytes = await audioFile.readAsBytes();
         }
@@ -70,7 +70,7 @@ class _ProcessingScreenState extends State<ProcessingScreen> {
       final url = Uri.parse('https://parkisense-api.onrender.com/predict');
       final request = http.MultipartRequest('POST', url);
 
-      // Attach the bytes as a form file using the exact key name 'file' required by your backend
+      
       request.files.add(
         http.MultipartFile.fromBytes(
           'file',
@@ -120,23 +120,15 @@ class _ProcessingScreenState extends State<ProcessingScreen> {
         });
 
         if (mounted) {
-          Navigator.pushReplacement(
+          Navigator.push(
             context,
             MaterialPageRoute(
               builder: (context) => ResultsScreen(
                 screening: screening,
+                showAppointmentDialog: data['prediction'] == 1,
               ),
             ),
           );
-          
-          // Show appointment booking popup if Parkinson's detected
-          if (data['prediction'] == 1) {
-            Future.delayed(const Duration(milliseconds: 500), () {
-              if (context.mounted) {
-                _showAppointmentDialog(context);
-              }
-            });
-          }
         }
       } else {
         throw Exception('Server rejected payload (${apiResponse.statusCode}): ${apiResponse.body}');

@@ -553,7 +553,7 @@ class _AppointmentBookingScreenState extends ConsumerState<AppointmentBookingScr
           context: context,
           builder: (context) => AlertDialog(
             title: Text(
-              'Appointment Confirmed',
+              'Appointment in Progress',
               style: GoogleFonts.poppins(
                 fontWeight: FontWeight.bold,
               ),

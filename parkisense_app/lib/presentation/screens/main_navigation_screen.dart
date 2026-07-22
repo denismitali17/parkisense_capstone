@@ -190,8 +190,8 @@ class _MainNavigationScreenState extends ConsumerState<MainNavigationScreen> {
             onPressed: () async {
               await FirebaseAuth.instance.signOut();
               if (context.mounted) {
-                Navigator.of(context).pushAndRemoveUntil(
-                  MaterialPageRoute(builder: (_) => WelcomeScreen()),
+                Navigator.of(context).pushNamedAndRemoveUntil(
+                  '/welcome',
                   (route) => false,
                 );
               }

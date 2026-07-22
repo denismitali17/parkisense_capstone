@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:record/record.dart';
 import 'package:file_picker/file_picker.dart';
+import 'package:path_provider/path_provider.dart';
+import 'dart:io';
 import '../../../../core/theme/app_colors.dart';
 import 'processing_screen.dart';
 
@@ -45,7 +48,16 @@ class _VoiceScreeningScreenState extends State<VoiceScreeningScreen> with Single
     try {
       if (!_isRecording) {
         if (await _audioRecorder.hasPermission()) {
-          await _audioRecorder.start(const RecordConfig(encoder: AudioEncoder.wav), path: '');
+          // On web, use empty path (browser handles storage)
+          // On mobile, use app documents directory
+          String? path;
+          if (!kIsWeb) {
+            final directory = await getApplicationDocumentsDirectory();
+            final timestamp = DateTime.now().millisecondsSinceEpoch;
+            path = '${directory.path}/recording_$timestamp.wav';
+          }
+          
+          await _audioRecorder.start(const RecordConfig(encoder: AudioEncoder.wav), path: path ?? '');
           setState(() {
             _isRecording = true;
             _recordingDuration = 0;
@@ -66,7 +78,20 @@ class _VoiceScreeningScreenState extends State<VoiceScreeningScreen> with Single
           _waveController?.stop();
         });
         if (mounted) {
-          Navigator.push(context, MaterialPageRoute(builder: (context) => ProcessingScreen(audioPath: path ?? "LiveStream")));
+          // On web, path will be a blob URL, on mobile it's a file path
+          if (kIsWeb) {
+            Navigator.push(context, MaterialPageRoute(builder: (context) => ProcessingScreen(audioPath: path ?? "LiveStream")));
+          } else if (path != null) {
+            // Verify file exists before navigating
+            final file = File(path);
+            if (await file.exists()) {
+              Navigator.push(context, MaterialPageRoute(builder: (context) => ProcessingScreen(audioPath: path)));
+            } else {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(content: Text('Recording file not found at: $path'), backgroundColor: AppColors.dangerRed),
+              );
+            }
+          }
         }
       }
     } catch (e) {
@@ -93,9 +118,20 @@ class _VoiceScreeningScreenState extends State<VoiceScreeningScreen> with Single
         type: FileType.custom,
         allowedExtensions: ['wav', 'mp3', 'm4a'],
       );
-      if (result != null && result.files.single.bytes != null) {
-        if (mounted) {
-          Navigator.push(context, MaterialPageRoute(builder: (context) => ProcessingScreen(audioBytes: result.files.single.bytes!)));
+      if (result != null) {
+        // Check if we got bytes directly 
+        if (result.files.single.bytes != null) {
+          if (mounted) {
+            Navigator.push(context, MaterialPageRoute(builder: (context) => ProcessingScreen(audioBytes: result.files.single.bytes!)));
+          }
+        } 
+        // If we got a path instead (Android/iOS), read the file
+        else if (result.files.single.path != null) {
+          final file = File(result.files.single.path!);
+          final bytes = await file.readAsBytes();
+          if (mounted) {
+            Navigator.push(context, MaterialPageRoute(builder: (context) => ProcessingScreen(audioBytes: bytes)));
+          }
         }
       }
     } catch (e) {
