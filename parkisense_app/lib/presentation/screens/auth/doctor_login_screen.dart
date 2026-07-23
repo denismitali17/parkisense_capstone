@@ -79,13 +79,17 @@ class _DoctorLoginScreenState extends ConsumerState<DoctorLoginScreen> {
         _isLoading = false;
       });
       if (mounted) {
-        String message = 'Login failed';
+        String message = 'Login failed. Please check your credentials and try again.';
         if (e.code == 'user-not-found') {
-          message = 'No doctor account found with this email';
+          message = 'No doctor account found with this email. Please contact admin.';
         } else if (e.code == 'wrong-password') {
-          message = 'Incorrect password';
+          message = 'Incorrect password. Please try again.';
         } else if (e.code == 'invalid-email') {
-          message = 'Invalid email address';
+          message = 'Invalid email address. Please enter a valid email.';
+        } else if (e.code == 'too-many-requests') {
+          message = 'Too many attempts. Please try again later.';
+        } else if (e.code == 'user-disabled') {
+          message = 'This account has been disabled. Please contact support.';
         }
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -101,7 +105,7 @@ class _DoctorLoginScreenState extends ConsumerState<DoctorLoginScreen> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Error: ${e.toString()}'),
+            content: Text('An error occurred. Please try again.'),
             backgroundColor: AppColors.dangerRed,
           ),
         );

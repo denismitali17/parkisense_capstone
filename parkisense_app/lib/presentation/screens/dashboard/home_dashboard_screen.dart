@@ -176,6 +176,34 @@ class _HomeDashboardScreenState extends ConsumerState<HomeDashboardScreen> {
               ],
             ),
             
+            const SizedBox(height: 16),
+            
+            Row(
+              children: [
+                Expanded(
+                  child: _buildQuickActionCard(
+                    icon: Icons.chat_rounded,
+                    title: 'Chat with Doctor',
+                    subtitle: 'Send Message',
+                    color: AppColors.secondaryBlue,
+                    onTap: () => Navigator.pushNamed(context, '/user-chat'),
+                    context: context,
+                  ),
+                ),
+                const SizedBox(width: 16),
+                Expanded(
+                  child: _buildQuickActionCard(
+                    icon: Icons.calendar_month_rounded,
+                    title: 'Book Appointment',
+                    subtitle: 'Schedule Visit',
+                    color: AppColors.primaryDarkNavy,
+                    onTap: () => Navigator.pushNamed(context, '/appointment'),
+                    context: context,
+                  ),
+                ),
+              ],
+            ),
+            
             const SizedBox(height: 24),
             
             // Recent Screenings Section
@@ -455,7 +483,7 @@ class _HomeDashboardScreenState extends ConsumerState<HomeDashboardScreen> {
               style: TextStyle(
                 fontSize: 16,
                 fontWeight: FontWeight.bold,
-                color: AppColors.textDark,
+                color: Theme.of(context).textTheme.bodyLarge?.color,
               ),
             ),
             
@@ -465,7 +493,7 @@ class _HomeDashboardScreenState extends ConsumerState<HomeDashboardScreen> {
               subtitle,
               style: TextStyle(
                 fontSize: 12,
-                color: AppColors.textLight,
+                color: Theme.of(context).textTheme.bodyMedium?.color?.withOpacity(0.7),
               ),
             ),
           ],

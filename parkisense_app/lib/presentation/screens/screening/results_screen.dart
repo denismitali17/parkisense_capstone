@@ -152,7 +152,7 @@ class _ResultsScreenState extends State<ResultsScreen> {
                 minimumSize: const Size(double.infinity, 54),
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
               ),
-              onPressed: () => Navigator.of(context).popUntil((route) => route.isFirst),
+              onPressed: () => Navigator.pushReplacementNamed(context, '/main'),
               child: const Text('Dismiss Report and Sync Workspace', style: TextStyle(fontWeight: FontWeight.bold)),
             ),
           ],
@@ -181,20 +181,44 @@ class _ResultsScreenState extends State<ResultsScreen> {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: Text(
-          'Share Report',
-          style: GoogleFonts.poppins(
-            fontWeight: FontWeight.bold,
-          ),
+        backgroundColor: Theme.of(context).dialogBackgroundColor,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        title: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: AppColors.primaryBlue.withOpacity(0.1),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: const Icon(
+                Icons.share_rounded,
+                color: AppColors.primaryBlue,
+                size: 28,
+              ),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Text(
+                'Share Report',
+                style: GoogleFonts.poppins(
+                  fontWeight: FontWeight.bold,
+                  color: Theme.of(context).textTheme.titleLarge?.color,
+                  fontSize: 18,
+                ),
+              ),
+            ),
+          ],
         ),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             Container(
-              padding: const EdgeInsets.all(16),
+              padding: const EdgeInsets.all(20),
               decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(12),
+                color: Theme.of(context).cardTheme.color,
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(color: AppColors.borderGrey.withOpacity(0.3)),
               ),
               child: QrImageView(
                 data: shareLink,
@@ -202,14 +226,21 @@ class _ResultsScreenState extends State<ResultsScreen> {
                 size: 200.0,
               ),
             ),
-            const SizedBox(height: 16),
-            Text(
-              shareLink,
-              style: GoogleFonts.poppins(
-                fontSize: 12,
-                color: AppColors.textLight,
+            const SizedBox(height: 20),
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: AppColors.backgroundLight,
+                borderRadius: BorderRadius.circular(12),
               ),
-              textAlign: TextAlign.center,
+              child: Text(
+                shareLink,
+                style: GoogleFonts.poppins(
+                  fontSize: 11,
+                  color: Theme.of(context).textTheme.bodyMedium?.color,
+                ),
+                textAlign: TextAlign.center,
+              ),
             ),
           ],
         ),
@@ -229,10 +260,15 @@ class _ResultsScreenState extends State<ResultsScreen> {
               'Copy Link',
               style: GoogleFonts.poppins(
                 fontWeight: FontWeight.w600,
+                color: Theme.of(context).textTheme.bodyMedium?.color,
               ),
             ),
+            style: TextButton.styleFrom(
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+            ),
           ),
-          TextButton.icon(
+          ElevatedButton.icon(
             onPressed: () {
               Navigator.pop(context);
             },
@@ -242,6 +278,13 @@ class _ResultsScreenState extends State<ResultsScreen> {
               style: GoogleFonts.poppins(
                 fontWeight: FontWeight.w600,
               ),
+            ),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppColors.primaryBlue,
+              foregroundColor: Colors.white,
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              elevation: 2,
             ),
           ),
         ],
@@ -253,50 +296,109 @@ class _ResultsScreenState extends State<ResultsScreen> {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: Text(
-          'Parkinson\'s Detected',
-          style: GoogleFonts.poppins(
-            fontWeight: FontWeight.bold,
-            color: AppColors.dangerRed,
-          ),
+        backgroundColor: Theme.of(context).dialogBackgroundColor,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        title: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: AppColors.dangerRed.withOpacity(0.1),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: const Icon(
+                Icons.warning_rounded,
+                color: AppColors.dangerRed,
+                size: 28,
+              ),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Text(
+                'Parkinson\'s Detected',
+                style: GoogleFonts.poppins(
+                  fontWeight: FontWeight.bold,
+                  color: AppColors.dangerRed,
+                  fontSize: 18,
+                ),
+              ),
+            ),
+          ],
         ),
         content: Column(
           mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Icon(
-              Icons.warning_rounded,
-              color: AppColors.dangerRed,
-              size: 48,
-            ),
-            const SizedBox(height: 16),
+            const SizedBox(height: 8),
             Text(
               'Based on the analysis, indicators of Parkinson\'s disease were detected. We recommend booking an appointment with a specialist for further evaluation.',
               style: GoogleFonts.poppins(
                 fontSize: 14,
-                height: 1.4,
+                height: 1.5,
+                color: Theme.of(context).textTheme.bodyMedium?.color,
               ),
-              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 16),
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: AppColors.primaryBlue.withOpacity(0.1),
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: AppColors.primaryBlue.withOpacity(0.3)),
+              ),
+              child: Row(
+                children: [
+                  Icon(
+                    Icons.info_outline,
+                    color: AppColors.primaryBlue,
+                    size: 20,
+                  ),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      'Early detection leads to better treatment outcomes',
+                      style: GoogleFonts.poppins(
+                        fontSize: 12,
+                        color: AppColors.primaryBlue,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
             ),
           ],
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
+            style: TextButton.styleFrom(
+              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+            ),
             child: Text(
               'Maybe Later',
               style: GoogleFonts.poppins(
-                color: AppColors.textLight,
+                color: Theme.of(context).textTheme.bodyMedium?.color,
+                fontWeight: FontWeight.w500,
               ),
             ),
           ),
           ElevatedButton(
             onPressed: () {
               Navigator.pop(context);
-              Navigator.pushNamed(context, '/appointment');
+              Navigator.pushReplacementNamed(
+                context,
+                '/main',
+                arguments: {'initialTab': 3}, // Navigate to appointment tab
+              );
             },
             style: ElevatedButton.styleFrom(
               backgroundColor: AppColors.primaryBlue,
               foregroundColor: Colors.white,
+              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              elevation: 2,
             ),
             child: Text(
               'Book Appointment',

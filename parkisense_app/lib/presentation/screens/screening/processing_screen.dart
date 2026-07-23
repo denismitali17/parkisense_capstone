@@ -92,9 +92,13 @@ class _ProcessingScreenState extends State<ProcessingScreen> {
       if (apiResponse.statusCode == 200) {
         final Map<String, dynamic> data = jsonDecode(apiResponse.body);
 
+        // Get the actual user ID from Firebase Auth
+        final user = FirebaseAuth.instance.currentUser;
+        final actualUserId = user?.uid ?? 'unknown_user';
+
         final screening = ScreeningModel(
           id: data['id'] ?? 'scr_${DateTime.now().millisecondsSinceEpoch}',
-          userId: data['user_id'] ?? 'current_practitioner',
+          userId: actualUserId, // Use actual Firebase user ID instead of API response
           audioUrl: widget.audioPath ?? 'uploaded_file',
           timestamp: DateTime.now(),
           prediction: data['prediction'] ?? 0,
@@ -104,7 +108,6 @@ class _ProcessingScreenState extends State<ProcessingScreen> {
         );
 
         // Save screening to Firestore
-        final user = FirebaseAuth.instance.currentUser;
         if (user != null) {
           try {
             await _firestoreService.saveScreening(user.uid, screening);

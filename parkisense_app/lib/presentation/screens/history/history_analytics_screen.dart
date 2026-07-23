@@ -230,15 +230,15 @@ class _HistoryAnalyticsScreenState extends ConsumerState<HistoryAnalyticsScreen>
               ),
               
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                 decoration: BoxDecoration(
                   color: AppColors.primaryBlue.withOpacity(0.1),
-                  borderRadius: BorderRadius.circular(12),
+                  borderRadius: BorderRadius.circular(8),
                 ),
                 child: Text(
-                  '${(screening.confidenceScore * 100).toStringAsFixed(1)}% Confidence',
+                  '${(screening.confidenceScore * 100).toStringAsFixed(1)}%',
                   style: TextStyle(
-                    fontSize: 14,
+                    fontSize: 12,
                     color: AppColors.primaryBlue,
                     fontWeight: FontWeight.w600,
                   ),
@@ -352,12 +352,41 @@ class _HistoryAnalyticsScreenState extends ConsumerState<HistoryAnalyticsScreen>
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Screening Details'),
+        backgroundColor: Theme.of(context).dialogBackgroundColor,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        title: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: AppColors.primaryBlue.withOpacity(0.1),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: const Icon(
+                Icons.analytics_rounded,
+                color: AppColors.primaryBlue,
+                size: 28,
+              ),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Text(
+                'Screening Details',
+                style: TextStyle(
+                  color: Theme.of(context).textTheme.titleLarge?.color,
+                  fontWeight: FontWeight.bold,
+                  fontSize: 18,
+                ),
+              ),
+            ),
+          ],
+        ),
         content: SingleChildScrollView(
           child: Column(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              const SizedBox(height: 8),
               _buildDetailRow('Date', _formatDate(screening.timestamp)),
               _buildDetailRow('Result', screening.diagnosis),
               _buildDetailRow('Overall Confidence', '${(screening.confidenceScore * 100).toStringAsFixed(1)}%'),
@@ -369,7 +398,17 @@ class _HistoryAnalyticsScreenState extends ConsumerState<HistoryAnalyticsScreen>
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('Close'),
+            style: TextButton.styleFrom(
+              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+            ),
+            child: Text(
+              'Close',
+              style: TextStyle(
+                color: Theme.of(context).textTheme.bodyMedium?.color,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
           ),
         ],
       ),
@@ -383,7 +422,13 @@ class _HistoryAnalyticsScreenState extends ConsumerState<HistoryAnalyticsScreen>
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Share with Healthcare Provider'),
+        backgroundColor: Theme.of(context).dialogBackgroundColor,
+        title: Text(
+          'Share with Healthcare Provider',
+          style: TextStyle(
+            color: Theme.of(context).textTheme.titleLarge?.color,
+          ),
+        ),
         content: SingleChildScrollView(
           child: Column(
             mainAxisSize: MainAxisSize.min,
@@ -391,7 +436,7 @@ class _HistoryAnalyticsScreenState extends ConsumerState<HistoryAnalyticsScreen>
               Container(
                 padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
-                  color: AppColors.backgroundLight,
+                  color: Theme.of(context).cardTheme.color,
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: QrImageView(
@@ -403,11 +448,12 @@ class _HistoryAnalyticsScreenState extends ConsumerState<HistoryAnalyticsScreen>
               
               const SizedBox(height: 16),
               
-              const Text(
+              Text(
                 'Scan to View Results',
                 style: TextStyle(
                   fontSize: 14,
                   fontWeight: FontWeight.w500,
+                  color: Theme.of(context).textTheme.bodyMedium?.color,
                 ),
               ),
               
@@ -417,7 +463,7 @@ class _HistoryAnalyticsScreenState extends ConsumerState<HistoryAnalyticsScreen>
                 'Healthcare providers can view this screening without logging in.',
                 style: TextStyle(
                   fontSize: 12,
-                  color: AppColors.textLight,
+                  color: Theme.of(context).textTheme.bodySmall?.color,
                 ),
                 textAlign: TextAlign.center,
               ),
@@ -455,7 +501,12 @@ class _HistoryAnalyticsScreenState extends ConsumerState<HistoryAnalyticsScreen>
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('Cancel'),
+            child: Text(
+              'Cancel',
+              style: TextStyle(
+                color: Theme.of(context).textTheme.bodyMedium?.color,
+              ),
+            ),
           ),
           ElevatedButton.icon(
             onPressed: () {

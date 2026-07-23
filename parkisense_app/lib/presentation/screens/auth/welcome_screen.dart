@@ -11,82 +11,79 @@ class WelcomeScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
-      body: CustomScrollView(
-        slivers: [
-          // Top Navigation Bar
-          SliverAppBar(
-            backgroundColor: Theme.of(context).appBarTheme.backgroundColor,
-            elevation: 0,
-            pinned: true,
-            title: Row(
-              children: [
-                Icon(
-                  Icons.health_and_safety_rounded,
-                  color: AppColors.primaryBlue,
-                  size: 32,
-                ),
-                const SizedBox(width: 8),
-                Text(
-                  'ParkiSense',
-                  style: TextStyle(
-                    color: Theme.of(context).appBarTheme.foregroundColor,
-                    fontWeight: FontWeight.bold,
-                    fontSize: 20,
-                    letterSpacing: 0.5,
-                  ),
-                ),
-              ],
+      appBar: AppBar(
+        backgroundColor: Theme.of(context).appBarTheme.backgroundColor,
+        elevation: 0,
+        title: Row(
+          children: [
+            Icon(
+              Icons.health_and_safety_rounded,
+              color: AppColors.primaryBlue,
+              size: 32,
             ),
-            actions: [
-              TextButton(
-                onPressed: () {
-                  Navigator.of(context).pushReplacement(
-                    MaterialPageRoute(builder: (_) => const LoginScreen()),
-                  );
-                },
-                style: TextButton.styleFrom(
-                  foregroundColor: AppColors.primaryBlue,
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                ),
-                child: Text(
-                  'Login',
-                  style: GoogleFonts.poppins(
-                    fontWeight: FontWeight.w600,
-                    fontSize: 15,
-                  ),
-                ),
+            const SizedBox(width: 8),
+            Text(
+              'ParkiSense',
+              style: TextStyle(
+                color: Theme.of(context).appBarTheme.foregroundColor,
+                fontWeight: FontWeight.bold,
+                fontSize: 20,
+                letterSpacing: 0.5,
               ),
-              const SizedBox(width: 8),
-              ElevatedButton(
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColors.primaryBlue,
-                  foregroundColor: Colors.white,
-                  elevation: 0,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(20),
-                  ),
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                ),
-                onPressed: () {
-                  Navigator.of(context).pushReplacement(
-                    MaterialPageRoute(builder: (_) => const SignUpScreen()),
-                  );
-                },
-                child: Text(
-                  'Sign Up',
-                  style: GoogleFonts.poppins(
-                    fontWeight: FontWeight.w600,
-                    fontSize: 15,
-                  ),
-                ),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () {
+              Navigator.of(context).pushReplacement(
+                MaterialPageRoute(builder: (_) => const LoginScreen()),
+              );
+            },
+            style: TextButton.styleFrom(
+              foregroundColor: AppColors.primaryBlue,
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            ),
+            child: Text(
+              'Login',
+              style: GoogleFonts.poppins(
+                fontWeight: FontWeight.w600,
+                fontSize: 15,
               ),
-              const SizedBox(width: 16),
-            ],
+            ),
           ),
-          
-          // Hero Section
-          SliverToBoxAdapter(
-            child: Container(
+          const SizedBox(width: 8),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppColors.primaryBlue,
+              foregroundColor: Colors.white,
+              elevation: 0,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(20),
+              ),
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            ),
+            onPressed: () {
+              Navigator.of(context).pushReplacement(
+                MaterialPageRoute(builder: (_) => const SignUpScreen()),
+              );
+            },
+            child: Text(
+              'Sign Up',
+              style: GoogleFonts.poppins(
+                fontWeight: FontWeight.w600,
+                fontSize: 15,
+              ),
+            ),
+          ),
+          const SizedBox(width: 16),
+        ],
+      ),
+      body: SingleChildScrollView(
+        child: Column(
+          children: [
+            // Hero Section
+            Container(
               padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 48),
               decoration: BoxDecoration(
                 gradient: LinearGradient(
@@ -114,9 +111,9 @@ class WelcomeScreen extends StatelessWidget {
                       color: Colors.white,
                     ),
                   ),
-                  
+
                   const SizedBox(height: 32),
-                  
+
                   // Hero Title
                   Text(
                     'Parkinson\'s Disease',
@@ -128,7 +125,7 @@ class WelcomeScreen extends StatelessWidget {
                     ),
                     textAlign: TextAlign.center,
                   ),
-                  
+
                   Text(
                     'Voice Screening',
                     style: GoogleFonts.poppins(
@@ -139,9 +136,9 @@ class WelcomeScreen extends StatelessWidget {
                     ),
                     textAlign: TextAlign.center,
                   ),
-                  
+
                   const SizedBox(height: 16),
-                  
+
                   // Hero Description
                   Text(
                     'Detect early signs through advanced voice analysis',
@@ -155,150 +152,150 @@ class WelcomeScreen extends StatelessWidget {
                 ],
               ),
             ),
-          ),
-          
-          // Services Section
-          SliverPadding(
-            padding: const EdgeInsets.all(32),
-            sliver: SliverList(
-              delegate: SliverChildListDelegate([
-                Text(
-                  'OUR SERVICES',
-                  style: GoogleFonts.poppins(
-                    fontSize: 24,
-                    fontWeight: FontWeight.bold,
-                    color: Theme.of(context).textTheme.headlineMedium?.color,
-                  ),
-                ),
-                
-                const SizedBox(height: 24),
-                
-                // Service Card 1
-                _buildServiceCard(
-                  context: context,
-                  icon: Icons.mic_rounded,
-                  title: 'Instant Voice Screening',
-                  description: 'Record a quick voice sample for analysis',
-                ),
-                
-                const SizedBox(height: 16),
-                
-                // Service Card 2
-                _buildServiceCard(
-                  context: context,
-                  icon: Icons.security_rounded,
-                  title: 'Secure Health Records',
-                  description: 'All data encrypted and stored safely',
-                ),
-                
-                const SizedBox(height: 16),
-                
-                // Service Card 4
-                _buildServiceCard(
-                  context: context,
-                  icon: Icons.medical_services_rounded,
-                  title: 'Professional Insights',
-                  description: 'Share results with doctors for expert consultation',
-                ),
-                
-                const SizedBox(height: 48),
-                
-                // CTA Buttons
-                ElevatedButton(
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.primaryBlue,
-                    foregroundColor: Colors.white,
-                    minimumSize: const Size(double.infinity, 56),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    elevation: 2,
-                  ),
-                  onPressed: () {
-                    Navigator.of(context).pushReplacement(
-                      MaterialPageRoute(builder: (_) => const LoginScreen()),
-                    );
-                  },
-                  child: Text(
-                    'Login',
+
+            // Services Section
+            Padding(
+              padding: const EdgeInsets.all(32),
+              child: Column(
+                children: [
+                  Text(
+                    'OUR SERVICES',
                     style: GoogleFonts.poppins(
+                      fontSize: 24,
                       fontWeight: FontWeight.bold,
-                      fontSize: 16,
+                      color: Theme.of(context).textTheme.headlineMedium?.color,
                     ),
                   ),
-                ),
-                
-                const SizedBox(height: 16),
-                
-                OutlinedButton(
-                  style: OutlinedButton.styleFrom(
-                    foregroundColor: AppColors.primaryBlue,
-                    minimumSize: const Size(double.infinity, 56),
-                    side: const BorderSide(color: AppColors.primaryBlue),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
+
+                  const SizedBox(height: 24),
+
+                  // Service Card 1
+                  _buildServiceCard(
+                    context: context,
+                    icon: Icons.mic_rounded,
+                    title: 'Instant Voice Screening',
+                    description: 'Record a quick voice sample for analysis',
+                  ),
+
+                  const SizedBox(height: 16),
+
+                  // Service Card 2
+                  _buildServiceCard(
+                    context: context,
+                    icon: Icons.security_rounded,
+                    title: 'Secure Health Records',
+                    description: 'All data encrypted and stored safely',
+                  ),
+
+                  const SizedBox(height: 16),
+
+                  // Service Card 3
+                  _buildServiceCard(
+                    context: context,
+                    icon: Icons.medical_services_rounded,
+                    title: 'Professional Insights',
+                    description: 'Share results with doctors for expert consultation',
+                  ),
+
+                  const SizedBox(height: 48),
+
+                  // CTA Buttons
+                  ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: AppColors.primaryBlue,
+                      foregroundColor: Colors.white,
+                      minimumSize: const Size(double.infinity, 56),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      elevation: 2,
+                    ),
+                    onPressed: () {
+                      Navigator.of(context).pushReplacement(
+                        MaterialPageRoute(builder: (_) => const LoginScreen()),
+                      );
+                    },
+                    child: Text(
+                      'Login',
+                      style: GoogleFonts.poppins(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 16,
+                      ),
                     ),
                   ),
-                  onPressed: () {
-                    Navigator.of(context).pushReplacement(
-                      MaterialPageRoute(builder: (_) => const SignUpScreen()),
-                    );
-                  },
-                  child: Text(
-                    'Sign Up',
-                    style: GoogleFonts.poppins(
-                      fontWeight: FontWeight.bold,
-                      fontSize: 16,
+
+                  const SizedBox(height: 16),
+
+                  OutlinedButton(
+                    style: OutlinedButton.styleFrom(
+                      foregroundColor: AppColors.primaryBlue,
+                      minimumSize: const Size(double.infinity, 56),
+                      side: const BorderSide(color: AppColors.primaryBlue),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                    ),
+                    onPressed: () {
+                      Navigator.of(context).pushReplacement(
+                        MaterialPageRoute(builder: (_) => const SignUpScreen()),
+                      );
+                    },
+                    child: Text(
+                      'Sign Up',
+                      style: GoogleFonts.poppins(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 16,
+                      ),
                     ),
                   ),
-                ),
-                
-                const SizedBox(height: 32),
-                
-                // Footer Links
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    TextButton(
-                      onPressed: () {
-                        _showPrivacyPolicyDialog(context);
-                      },
-                      child: Text(
-                        'Privacy Policy',
-                        style: TextStyle(
-                          color: AppColors.textLight,
-                          fontSize: 14,
+
+                  const SizedBox(height: 32),
+
+                  // Footer Links
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      TextButton(
+                        onPressed: () {
+                          _showPrivacyPolicyDialog(context);
+                        },
+                        child: Text(
+                          'Privacy Policy',
+                          style: TextStyle(
+                            color: AppColors.textLight,
+                            fontSize: 14,
+                          ),
                         ),
                       ),
-                    ),
-                    const SizedBox(width: 8),
-                    Text(
-                      '|',
-                      style: TextStyle(
-                        color: AppColors.borderGrey,
-                      ),
-                    ),
-                    const SizedBox(width: 8),
-                    TextButton(
-                      onPressed: () {
-                        _showAboutUsDialog(context);
-                      },
-                      child: Text(
-                        'About Us',
+                      const SizedBox(width: 8),
+                      Text(
+                        '|',
                         style: TextStyle(
-                          color: AppColors.textLight,
-                          fontSize: 14,
+                          color: AppColors.borderGrey,
                         ),
                       ),
-                    ),
-                  ],
-                ),
-                
-                const SizedBox(height: 32),
-              ]),
+                      const SizedBox(width: 8),
+                      TextButton(
+                        onPressed: () {
+                          _showAboutUsDialog(context);
+                        },
+                        child: Text(
+                          'About Us',
+                          style: TextStyle(
+                            color: AppColors.textLight,
+                            fontSize: 14,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+
+                  const SizedBox(height: 32),
+                ],
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
@@ -341,9 +338,9 @@ class WelcomeScreen extends StatelessWidget {
               size: 28,
             ),
           ),
-          
+
           const SizedBox(width: 16),
-          
+
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -367,7 +364,7 @@ class WelcomeScreen extends StatelessWidget {
               ],
             ),
           ),
-          
+
           Icon(
             Icons.check_circle_rounded,
             color: AppColors.successGreen,
@@ -439,12 +436,12 @@ class WelcomeScreen extends StatelessWidget {
               _buildPolicySection(
                 context,
                 'Technology',
-                'Our platform uses state-of-the-art machine learning models (SVM and CNN) to analyze voice patterns and detect early signs of Parkinson\'s disease.',
+                'Our platform uses state-of-the-art machine learning models to analyze voice patterns and detect early signs of Parkinson\'s disease.',
               ),
               _buildPolicySection(
                 context,
                 'Team',
-                'We are a team of healthcare professionals, AI researchers, and software engineers committed to improving early diagnosis.',
+                'We are a team of healthcare professionals, researchers, and software engineers committed to improving early diagnosis.',
               ),
               _buildPolicySection(
                 context,

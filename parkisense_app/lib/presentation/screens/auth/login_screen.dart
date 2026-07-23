@@ -38,9 +38,21 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
             // Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => const HomeScreen()));
           }
         },
-        error: (err, _) => ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Authentication Failed: ${err.toString()}'), backgroundColor: AppColors.dangerRed),
-        ),
+        error: (err, _) {
+          String errorMessage = 'Authentication failed. Please check your credentials and try again.';
+          if (err.toString().contains('user-not-found')) {
+            errorMessage = 'No account found with this email. Please sign up first.';
+          } else if (err.toString().contains('wrong-password')) {
+            errorMessage = 'Incorrect password. Please try again.';
+          } else if (err.toString().contains('invalid-email')) {
+            errorMessage = 'Invalid email address. Please enter a valid email.';
+          } else if (err.toString().contains('too-many-requests')) {
+            errorMessage = 'Too many attempts. Please try again later.';
+          }
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text(errorMessage), backgroundColor: AppColors.dangerRed),
+          );
+        },
         loading: () => {},
       );
     });

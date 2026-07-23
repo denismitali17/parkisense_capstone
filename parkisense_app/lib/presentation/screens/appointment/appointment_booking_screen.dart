@@ -52,6 +52,7 @@ class _AppointmentBookingScreenState extends ConsumerState<AppointmentBookingScr
     return Scaffold(
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
+        automaticallyImplyLeading: false,
         title: Text(
           'Appointments',
           style: GoogleFonts.poppins(
@@ -435,68 +436,130 @@ class _AppointmentBookingScreenState extends ConsumerState<AppointmentBookingScr
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: Text(
-          'Cancel Appointment',
-          style: GoogleFonts.poppins(
-            fontWeight: FontWeight.bold,
-          ),
+        backgroundColor: Theme.of(context).dialogBackgroundColor,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        title: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: AppColors.dangerRed.withOpacity(0.1),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: const Icon(
+                Icons.cancel_rounded,
+                color: AppColors.dangerRed,
+                size: 28,
+              ),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Text(
+                'Cancel Appointment',
+                style: GoogleFonts.poppins(
+                  fontWeight: FontWeight.bold,
+                  color: Theme.of(context).textTheme.titleLarge?.color,
+                  fontSize: 18,
+                ),
+              ),
+            ),
+          ],
         ),
-        content: Text(
-          'Are you sure you want to cancel this appointment?',
-          style: GoogleFonts.poppins(),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const SizedBox(height: 8),
+            Text(
+              'Are you sure you want to cancel this appointment?',
+              style: GoogleFonts.poppins(
+                color: Theme.of(context).textTheme.bodyMedium?.color,
+                fontSize: 14,
+              ),
+            ),
+            const SizedBox(height: 16),
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: AppColors.accentWarningRed.withOpacity(0.1),
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: AppColors.accentWarningRed.withOpacity(0.3)),
+              ),
+              child: Row(
+                children: [
+                  Icon(
+                    Icons.info_outline,
+                    color: AppColors.accentWarningRed,
+                    size: 20,
+                  ),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      'This action cannot be undone',
+                      style: GoogleFonts.poppins(
+                        fontSize: 12,
+                        color: AppColors.accentWarningRed,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
         ),
         actions: [
-          Row(
-            children: [
-              Expanded(
-                child: TextButton(
-                  onPressed: () => Navigator.pop(context),
-                  child: Text(
-                    'No',
-                    style: GoogleFonts.poppins(
-                      color: AppColors.textLight,
-                    ),
-                  ),
-                ),
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            style: TextButton.styleFrom(
+              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+            ),
+            child: Text(
+              'No',
+              style: GoogleFonts.poppins(
+                color: Theme.of(context).textTheme.bodyMedium?.color,
+                fontWeight: FontWeight.w500,
               ),
-              Expanded(
-                child: ElevatedButton(
-                  onPressed: () async {
-                    Navigator.pop(context);
-                    try {
-                      await _firestoreService.deleteAppointment(user.uid, appointment.id);
-                      if (mounted) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                            content: Text('Appointment cancelled'),
-                            backgroundColor: AppColors.successGreen,
-                          ),
-                        );
-                      }
-                    } catch (e) {
-                      if (mounted) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                            content: Text('Error cancelling appointment: ${e.toString()}'),
-                            backgroundColor: AppColors.dangerRed,
-                          ),
-                        );
-                      }
-                    }
-                  },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.dangerRed,
-                    foregroundColor: Colors.white,
-                  ),
-                  child: Text(
-                    'Yes',
-                    style: GoogleFonts.poppins(
-                      fontWeight: FontWeight.w600,
+            ),
+          ),
+          ElevatedButton(
+            onPressed: () async {
+              Navigator.pop(context);
+              try {
+                await _firestoreService.deleteAppointment(user.uid, appointment.id);
+                if (mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text('Appointment cancelled'),
+                      backgroundColor: AppColors.successGreen,
                     ),
-                  ),
-                ),
+                  );
+                }
+              } catch (e) {
+                if (mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text('Error cancelling appointment: ${e.toString()}'),
+                      backgroundColor: AppColors.dangerRed,
+                    ),
+                  );
+                }
+              }
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppColors.dangerRed,
+              foregroundColor: Colors.white,
+              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              elevation: 2,
+            ),
+            child: Text(
+              'Yes, Cancel',
+              style: GoogleFonts.poppins(
+                fontWeight: FontWeight.w600,
               ),
-            ],
+            ),
           ),
         ],
       ),
